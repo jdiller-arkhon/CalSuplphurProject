@@ -48,9 +48,9 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           ) : undefined
         }
       />
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2" title="Lines & allocation" pad={false}>
-          <Table head={["Product", "Ordered", "Allocated", "Shipped", "Remaining", "Unit price", "Extended"]}>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <Card title="Lines & allocation" pad={false}>
+          <Table head={["Product", "Ordered", "Allocated", "Shipped", "Open", "Price", "Value"]}>
             {o.lines.map((x) => {
               const alloc = x.reservations.filter((r) => r.status !== "RELEASED").reduce((s, r) => s.plus(dec(r.quantity)), new D(0));
               return (

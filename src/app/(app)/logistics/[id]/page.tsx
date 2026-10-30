@@ -4,7 +4,7 @@ import { Plus, FileText } from "lucide-react";
 import { requireUser, can } from "@/server/auth";
 import { db } from "@/server/db";
 import { D, dec, fmtMoney, fmtQty } from "@/lib/decimal";
-import { Card, PageHeader, Table, StatusBadge, Stat, Badge } from "@/components/ui";
+import { Card, PageHeader, Table, StatusBadge, Stat, Badge, humanize } from "@/components/ui";
 import { ActionButton, FormModal } from "@/components/form-modal";
 import { dispatchShipmentAction, deliverShipmentAction, cancelShipmentAction, addFreightAction, updateShipmentAction } from "@/server/actions/ops";
 import { today, isoDate } from "@/server/lookups";
@@ -36,8 +36,8 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
           </>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2" title="Lines" pad={false}>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <Card title="Lines" pad={false}>
           <Table head={["Product", "Lot", "Quantity", ...(fin ? ["Unit cost", "COGS"] : []), "Posted"]}>
             {s.lines.map((l) => {
               const lot = lots.get(l.lotId);
@@ -66,11 +66,11 @@ export default async function ShipmentDetail({ params }: { params: Promise<{ id:
           {s.notes && <p className="mt-3 whitespace-pre-wrap rounded-lg bg-surface-2 p-3 text-xs text-fg-2">{s.notes}</p>}
         </Card>
       </div>
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
         {fin && (
           <Card title="Freight & handling" action={s.status !== "CANCELLED" && <FormModal title="Add freight cost" trigger="Add" icon={<Plus size={13} />} triggerVariant="ghost" action={addFreightAction} hidden={{ shipmentId: s.id }} fields={[{ name: "category", label: "Category", type: "select", required: true, options: FREIGHT }, { name: "amount", label: "Amount (USD)", type: "number", required: true }, { name: "notes", label: "Notes / invoice ref", span: 2 }]} />} pad={false}>
             <Table head={["Category", "Notes", "Amount"]}>
-              {s.freightCosts.map((f) => <tr key={f.id}><td>{f.category.replace("_", " ").toLowerCase()}</td><td className="text-fg-2">{f.notes ?? ""}</td><td className="num">{fmtMoney(f.amount)}</td></tr>)}
+              {s.freightCosts.map((f) => <tr key={f.id}><td>{humanize(f.category)}</td><td className="text-fg-2">{f.notes ?? ""}</td><td className="num">{fmtMoney(f.amount)}</td></tr>)}
               <tr><td className="font-medium">Total</td><td className="text-xs text-fg-3">{qty.isZero() ? "" : `${fmtMoney(freight.div(qty))} per unit`}</td><td className="num font-semibold">{fmtMoney(freight)}</td></tr>
             </Table>
           </Card>

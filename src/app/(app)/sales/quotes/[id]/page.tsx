@@ -47,8 +47,8 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
           <div>Priced below the minimum acceptable margin. {q.status === "PENDING_APPROVAL" ? "Awaiting owner approval." : q.approvedBy ? `Approved by ${users.get(q.approvedBy)} on ${q.approvedAt?.toLocaleDateString("en-US")}.` : "Requires approval before conversion."}</div>
         </div>
       )}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2" title="Lines" pad={false}>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <Card title="Lines" pad={false}>
           <Table head={["Product", "Quantity", "Unit price", "Extended", ...(fin ? ["Unit cost", "Margin"] : [])]}>
             {q.lines.map((l) => {
               const m = dec(l.unitPrice).isZero() ? null : dec(l.unitPrice).minus(dec(l.unitCost)).div(dec(l.unitPrice));

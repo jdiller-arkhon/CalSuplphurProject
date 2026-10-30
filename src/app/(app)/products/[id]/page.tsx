@@ -103,7 +103,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
         </Table>
         {!p.lots.length && <p className="px-5 py-6 text-sm text-fg-2">No inventory has been received for this product. <Link className="text-accent" href="/inventory?action=receive">Receive inventory →</Link></p>}
       </Card>
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
         <Card title="Recent movements" pad={false}>
           <Table head={["Date", "Type", "Lot", "Qty", "Ref"]}>
             {p.movements.map((m) => (

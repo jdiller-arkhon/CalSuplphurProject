@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 
 const C = { accent: "var(--accent)", gold: "var(--gold)", pos: "var(--pos)", grid: "var(--border)", text: "var(--text-3)" };
 const compact = (v: number) => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v);
@@ -29,23 +29,19 @@ export function RevenueTrend({ data, height = 260 }: { data: TrendPoint[]; heigh
   return (
     <div style={{ height }} role="img" aria-label="Revenue and gross profit by month">
       <ResponsiveContainer>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={C.accent} stopOpacity={0.22} />
-              <stop offset="100%" stopColor={C.accent} stopOpacity={0} />
-            </linearGradient>
-          </defs>
+        <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={3}>
           <CartesianGrid stroke={C.grid} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="label" tick={{ fill: C.text, fontSize: 11 }} tickLine={false} axisLine={false} />
-          <YAxis yAxisId="l" tick={{ fill: C.text, fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={compact} width={48} />
-          <YAxis yAxisId="r" orientation="right" tick={{ fill: C.text, fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} width={40} />
-          <Tooltip content={<Tip />} />
-          <Area yAxisId="l" type="monotone" dataKey="revenue" name="Revenue" stroke={C.accent} strokeWidth={2} fill="url(#rev)" />
-          <Bar yAxisId="l" dataKey="profit" name="Gross profit" fill={C.gold} radius={[3, 3, 0, 0]} maxBarSize={22} />
-          <Line yAxisId="r" type="monotone" dataKey="margin" name="Margin" stroke={C.pos} strokeWidth={1.5} dot={false} connectNulls />
-        </ComposedChart>
+          <YAxis tick={{ fill: C.text, fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={compact} width={48} />
+          <Tooltip content={<Tip />} cursor={{ fill: "var(--surface-2)" }} />
+          <Bar dataKey="revenue" name="Revenue" fill={C.accent} radius={[4, 4, 0, 0]} maxBarSize={26} />
+          <Bar dataKey="profit" name="Gross profit" fill={C.gold} radius={[4, 4, 0, 0]} maxBarSize={26} />
+        </BarChart>
       </ResponsiveContainer>
+      <div className="mt-2 flex gap-4 text-xs text-fg-2" aria-hidden>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-accent" />Revenue</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-gold" />Gross profit</span>
+      </div>
     </div>
   );
 }
@@ -58,7 +54,7 @@ export function HBar({ data, money = true, height, color = "accent" }: { data: {
       <ResponsiveContainer>
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
           <XAxis type="number" hide />
-          <YAxis type="category" dataKey="label" width={140} tick={{ fill: "var(--text-2)", fontSize: 12 }} tickLine={false} axisLine={false} />
+          <YAxis type="category" dataKey="label" width={168} tick={{ fill: "var(--text-2)", fontSize: 12 }} tickLine={false} axisLine={false} />
           <Tooltip content={<Tip money={money} />} cursor={{ fill: "var(--surface-2)" }} />
           <Bar dataKey="value" name={money ? "Value" : "Quantity"} radius={[0, 4, 4, 0]} maxBarSize={18} onClick={(d: { payload?: { href?: string } }) => d.payload?.href && router.push(d.payload.href)} className="cursor-pointer">
             {data.map((_, i) => (
@@ -78,7 +74,7 @@ export function StockBars({ data }: { data: { label: string; reserved: number; a
       <ResponsiveContainer>
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
           <XAxis type="number" hide />
-          <YAxis type="category" dataKey="label" width={140} tick={{ fill: "var(--text-2)", fontSize: 12 }} tickLine={false} axisLine={false} />
+          <YAxis type="category" dataKey="label" width={168} tick={{ fill: "var(--text-2)", fontSize: 12 }} tickLine={false} axisLine={false} />
           <Tooltip content={<Tip money={false} />} cursor={{ fill: "var(--surface-2)" }} />
           <Bar dataKey="available" name="Available" stackId="s" fill={C.accent} maxBarSize={18} onClick={(d: { payload?: { href?: string } }) => d.payload?.href && router.push(d.payload.href)} />
           <Bar dataKey="reserved" name="Reserved" stackId="s" fill={C.gold} radius={[0, 4, 4, 0]} maxBarSize={18} />

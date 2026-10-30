@@ -31,7 +31,7 @@ export function Card({ className, children, title, action, pad = true }: { class
   return (
     <section className={cx("card rise", className)}>
       {(title || action) && (
-        <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-1">
+        <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
           <h2 className="text-[13.5px] font-semibold tracking-tight text-fg">{title}</h2>
           {action}
         </div>
@@ -72,8 +72,17 @@ const tones = {
   gold: "bg-gold-soft text-gold border-transparent",
 };
 export type Tone = keyof typeof tones;
-export function Badge({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
-  return <span className={cx("inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide", tones[tone])}>{children}</span>;
+export const humanize = (v: string) => {
+  const t = v.replace(/_/g, " ").toLowerCase();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
+export function Badge({ tone = "neutral", children, dot }: { tone?: Tone; children: ReactNode; dot?: boolean }) {
+  return (
+    <span className={cx("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11.5px] font-medium", tones[tone])}>
+      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" aria-hidden />}
+      {typeof children === "string" && (children.includes("_") || /[a-z]/.test(children) || children.length > 4) ? humanize(children) : children}
+    </span>
+  );
 }
 
 export function statusTone(s: string): Tone {
@@ -84,7 +93,7 @@ export function statusTone(s: string): Tone {
   return "neutral";
 }
 export function StatusBadge({ status }: { status: string }) {
-  return <Badge tone={statusTone(status)}>{status.replace(/_/g, " ").toLowerCase()}</Badge>;
+  return <Badge tone={statusTone(status)} dot>{status}</Badge>;
 }
 
 export function Kpi({ label, value, sub, href, tone, icon: Icon }: { label: string; value: ReactNode; sub?: ReactNode; href?: string; tone?: Tone; icon?: LucideIcon }) {
@@ -121,13 +130,13 @@ export function Table({ head, children, empty }: { head: ReactNode[]; children: 
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-line text-left text-[11px] font-semibold uppercase tracking-wider text-fg-3">
+          <tr className="border-y border-line bg-surface-2/60 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-fg-3">
             {head.map((h, i) => (
               <th key={i} scope="col" className="whitespace-nowrap px-3.5 py-2.5 first:pl-5 last:pr-5">{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="[&>tr]:border-b [&>tr]:border-line [&>tr:last-child]:border-0 [&>tr:hover]:bg-surface-2/60 [&_td]:whitespace-nowrap [&_td]:px-3.5 [&_td]:py-3 [&_td:first-child]:pl-5 [&_td:last-child]:pr-5">{children}</tbody>
+        <tbody className="[&>tr]:border-b [&>tr]:border-line [&>tr:last-child]:border-0 [&>tr]:transition-colors [&>tr:hover]:bg-accent-soft/40 [&_td]:whitespace-nowrap [&_td]:px-3.5 [&_td]:py-3 [&_td:first-child]:pl-5 [&_td:last-child]:pr-5">{children}</tbody>
       </table>
       {empty}
     </div>
@@ -162,7 +171,7 @@ export function Textarea(p: ComponentProps<"textarea">) {
 
 export function Stat({ label, value, tone }: { label: string; value: ReactNode; tone?: Tone }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 py-1.5 text-sm">
+    <div className="flex items-baseline justify-between gap-4 border-b border-line/70 py-2.5 text-sm last:border-0">
       <span className="text-fg-2">{label}</span>
       <span className={cx("num font-medium", tone === "crit" ? "text-crit" : tone === "pos" ? "text-pos" : tone === "warn" ? "text-warn" : "text-fg")}>{value}</span>
     </div>

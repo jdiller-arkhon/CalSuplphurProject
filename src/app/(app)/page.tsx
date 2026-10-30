@@ -166,9 +166,9 @@ export default async function Overview({ searchParams }: { searchParams: Promise
                 {pipe.shipments.slice(0, 6).map((s) => (
                   <li key={s.id}>
                     <Link href={`/logistics/${s.id}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-surface-2">
-                      <span className="num text-[13px] font-medium">{s.number}</span>
+                      <span className="num whitespace-nowrap text-[13px] font-medium">{s.number}</span>
                       <span className="truncate text-xs text-fg-2">{s.order?.customer.name ?? s.destination ?? s.mode}</span>
-                      <span className="ml-auto text-xs text-fg-3">{s.scheduledAt?.toLocaleDateString("en-US", { month: "short", day: "numeric" }) ?? "Unscheduled"}</span>
+                      <span className="ml-auto whitespace-nowrap text-xs text-fg-3">{s.scheduledAt?.toLocaleDateString("en-US", { month: "short", day: "numeric" }) ?? "Unscheduled"}</span>
                       <StatusBadge status={s.status} />
                     </Link>
                   </li>
@@ -184,8 +184,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
                 {recent.map((m) => (
                   <li key={m.id} className="flex items-center gap-3 px-5 py-2.5 text-[13px]">
                     <Badge tone={Number(m.quantity) >= 0 ? "pos" : "warn"}>{m.type.replace("_", " ").toLowerCase()}</Badge>
-                    <span className="truncate">{m.product.name}</span>
-                    <span className="truncate text-xs text-fg-3">{m.lot.location.code}/{m.lot.lotNumber}</span>
+                    <span className="min-w-0 flex-1 leading-tight"><span className="block truncate">{m.product.name}</span><span className="block truncate text-xs text-fg-3">{m.lot.location.code} / {m.lot.lotNumber}</span></span>
                     <span className="num ml-auto font-medium">{Number(m.quantity) > 0 ? "+" : ""}{fmtQty(m.quantity)}</span>
                   </li>
                 ))}

@@ -134,3 +134,25 @@ dialog::backdrop {
   aside, header, .no-print { display: none !important; }
   main { padding: 0 !important; }
 }
+
+/* Financial alignment: numeric cells and their headers right-align automatically. */
+td.num { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(1).num) thead th:nth-child(1) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(2).num) thead th:nth-child(2) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(3).num) thead th:nth-child(3) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(4).num) thead th:nth-child(4) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(5).num) thead th:nth-child(5) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(6).num) thead th:nth-child(6) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(7).num) thead th:nth-child(7) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(8).num) thead th:nth-child(8) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(9).num) thead th:nth-child(9) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(10).num) thead th:nth-child(10) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(11).num) thead th:nth-child(11) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(12).num) thead th:nth-child(12) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(13).num) thead th:nth-child(13) { text-align: right; }
+table:has(tbody tr:first-child > td:nth-child(14).num) thead th:nth-child(14) { text-align: right; }
+/* Row actions stay out of the way until the row is hovered or focused. */
+@media (hover: hover) {
+  .row-actions { opacity: 0; transition: opacity .12s; }
+  tr:hover .row-actions, tr:focus-within .row-actions { opacity: 1; }
+}

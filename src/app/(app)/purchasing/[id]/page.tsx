@@ -35,8 +35,8 @@ export default async function PODetail({ params }: { params: Promise<{ id: strin
           </>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2" title="Lines" pad={false}>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <Card title="Lines" pad={false}>
           <Table head={["Product", "Ordered", "Received", "Open", "Unit cost", "Extended", ""]}>
             {p.lines.map((x) => {
               const openQty = D.max(0, dec(x.quantity).minus(dec(x.receivedQty)));

@@ -11,6 +11,8 @@ import { today, isoDate } from "@/server/lookups";
 
 const FREIGHT = [["FREIGHT", "Freight"], ["FUEL_SURCHARGE", "Fuel surcharge"], ["LOADING", "Loading"], ["UNLOADING", "Unloading"], ["DEMURRAGE", "Demurrage"], ["OTHER", "Other"]].map(([value, label]) => ({ value, label }));
 
+export const metadata = { title: "Shipment" };
+
 export default async function ShipmentDetail({ params }: { params: Promise<{ id: string }> }) {
   const u = await requireUser("logistics.manage");
   const s = await db.shipment.findUnique({ where: { id: (await params).id }, include: { order: { include: { customer: true } }, lines: { include: { salesOrderLine: { include: { product: true } } } }, freightCosts: true, documents: { where: { archived: false } } } });

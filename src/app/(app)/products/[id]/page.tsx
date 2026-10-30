@@ -97,7 +97,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
               <td className="num">{fmtQty(l.onHand, 3)}</td>
               <td className="num">{fmtQty(l.reserved, 3)}</td>
               <td className="num">{fmtQty(dec(l.onHand).minus(dec(l.reserved)), 3)}</td>
-              {val && <><td className="num">{fmtMoney(l.unitCost, "USD", 4)}</td><td className="num">{fmtMoney(dec(l.onHand).times(dec(l.unitCost)))}</td></>}
+              {val && <><td className="num">{fmtMoney(l.unitCost)}</td><td className="num">{fmtMoney(dec(l.onHand).times(dec(l.unitCost)))}</td></>}
             </tr>
           ))}
         </Table>
@@ -105,26 +105,25 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
       </Card>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card title="Recent movements" pad={false}>
-          <Table head={["Date", "Type", "Lot", "Qty", "Reference"]}>
+          <Table head={["Date", "Type", "Lot", "Qty", "Ref"]}>
             {p.movements.map((m) => (
               <tr key={m.id}>
-                <td className="text-fg-2">{m.at.toLocaleDateString("en-US")}</td>
+                <td className="text-fg-2">{m.at.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
                 <td><Badge tone={dec(m.quantity).gte(0) ? "pos" : "warn"}>{m.type.replace("_", " ").toLowerCase()}</Badge></td>
                 <td className="text-xs">{m.lot.location.code}/{m.lot.lotNumber}</td>
                 <td className="num">{fmtQty(m.quantity, 3)}</td>
-                <td className="truncate text-fg-2">{m.reference ?? m.reason ?? ""}</td>
+                <td className="max-w-[140px] truncate text-fg-2" title={m.reference ?? m.reason ?? ""}>{m.reference ?? m.reason ?? ""}</td>
               </tr>
             ))}
           </Table>
         </Card>
         {can(u, "quotes.manage") && (
           <Card title="Recent quotes" pad={false}>
-            <Table head={["Quote", "Customer", "Qty", "Price", "Status"]}>
+            <Table head={["Quote", "Customer", "Price", "Status"]}>
               {p.quoteLines.map((l) => (
                 <tr key={l.id}>
                   <td><Link className="text-accent" href={`/sales/quotes/${l.quoteId}`}>{l.quote.number}</Link></td>
-                  <td>{l.quote.customer.name}</td>
-                  <td className="num">{fmtQty(l.quantity)}</td>
+                  <td className="max-w-[180px] truncate">{l.quote.customer.name}</td>
                   <td className="num">{fmtMoney(l.unitPrice)}</td>
                   <td><StatusBadge status={l.quote.status} /></td>
                 </tr>

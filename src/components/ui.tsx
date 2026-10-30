@@ -119,15 +119,15 @@ export function Empty({ icon: Icon, title, children, action }: { icon?: LucideIc
 export function Table({ head, children, empty }: { head: ReactNode[]; children: ReactNode; empty?: ReactNode }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] border-collapse text-sm">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-line text-left text-[11px] font-semibold uppercase tracking-wider text-fg-3">
             {head.map((h, i) => (
-              <th key={i} scope="col" className="whitespace-nowrap px-4 py-2.5 first:pl-5 last:pr-5">{h}</th>
+              <th key={i} scope="col" className="whitespace-nowrap px-3.5 py-2.5 first:pl-5 last:pr-5">{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="[&>tr]:border-b [&>tr]:border-line [&>tr:last-child]:border-0 [&>tr:hover]:bg-surface-2/60 [&_td]:px-4 [&_td]:py-2.5 [&_td:first-child]:pl-5 [&_td:last-child]:pr-5">{children}</tbody>
+        <tbody className="[&>tr]:border-b [&>tr]:border-line [&>tr:last-child]:border-0 [&>tr:hover]:bg-surface-2/60 [&_td]:whitespace-nowrap [&_td]:px-3.5 [&_td]:py-3 [&_td:first-child]:pl-5 [&_td:last-child]:pr-5">{children}</tbody>
       </table>
       {empty}
     </div>

@@ -7,11 +7,11 @@ export const cx = clsx;
 
 type BtnVariant = "primary" | "secondary" | "ghost" | "danger" | "gold";
 const btn: Record<BtnVariant, string> = {
-  primary: "bg-accent text-white hover:brightness-110 shadow-sm",
+  primary: "btn-shine bg-gradient-to-b from-[#4573a0] to-accent text-white shadow-[0_6px_16px_-6px_rgba(54,93,131,.7)] hover:brightness-110",
   secondary: "bg-surface text-fg border border-line hover:bg-surface-2",
   ghost: "text-fg-2 hover:bg-surface-2 hover:text-fg",
   danger: "bg-crit text-white hover:brightness-110",
-  gold: "bg-gold text-[#101d2e] hover:brightness-105 shadow-sm",
+  gold: "btn-shine bg-gradient-to-b from-[#e2bd78] to-gold text-[#101d2e] shadow-[0_6px_18px_-6px_rgba(196,154,82,.8)] hover:brightness-105",
 };
 export function buttonClass(variant: BtnVariant = "primary", size: "sm" | "md" = "md") {
   return cx(

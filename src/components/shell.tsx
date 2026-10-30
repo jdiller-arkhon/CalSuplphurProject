@@ -26,7 +26,7 @@ export function Sidebar({ perms, company, open, onClose }: { perms: string[]; co
       aria-current={active(i.href) ? "page" : undefined}
       className={cx(
         "group relative flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] font-medium transition",
-        active(i.href) ? "bg-sidebar-2 text-white" : "text-sidebar-fg hover:bg-sidebar-2/60 hover:text-white",
+        active(i.href) ? "nav-active text-white" : "text-sidebar-fg hover:bg-white/5 hover:text-white",
       )}
     >
       {active(i.href) && <span className="absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r bg-gold" aria-hidden />}
@@ -37,11 +37,11 @@ export function Sidebar({ perms, company, open, onClose }: { perms: string[]; co
   return (
     <>
       <div className={cx("fixed inset-0 z-30 bg-black/40 lg:hidden", open ? "block" : "hidden")} onClick={onClose} aria-hidden />
-      <aside className={cx("fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col bg-sidebar px-3 pb-3 transition-transform lg:translate-x-0", open ? "translate-x-0" : "-translate-x-full")} aria-label="Primary">
+      <aside className={cx("sidebar-bg fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col px-3 pb-3 transition-transform lg:translate-x-0", open ? "translate-x-0" : "-translate-x-full")} aria-label="Primary">
         <Link href="/" className="flex h-16 items-center gap-2.5 px-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-[#a37c3c] text-[11px] font-bold tracking-wider text-sidebar shadow-inner">S</div>
           <div className="leading-tight">
-            <div className="text-[13px] font-semibold tracking-tight text-white">CSC Command</div>
+            <div className="gold-text text-[14px] font-semibold tracking-tight">CSC Command</div>
             <div className="max-w-[160px] truncate text-[11px] text-sidebar-fg/70">{company || "California Sulphur Co."}</div>
           </div>
         </Link>
@@ -76,7 +76,7 @@ export function Header({ user, unread, onMenu }: { user: { name: string; email: 
     return () => window.removeEventListener("keydown", h);
   }, []);
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur md:px-8">
+    <header className="glass sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line/70 px-4 md:px-8">
       <button className="rounded-lg p-2 text-fg-2 hover:bg-surface-2 lg:hidden" onClick={onMenu} aria-label="Open navigation">
         <Icons.Menu size={18} />
       </button>

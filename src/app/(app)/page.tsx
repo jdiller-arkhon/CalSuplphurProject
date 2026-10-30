@@ -7,6 +7,7 @@ import { getSettingTyped } from "@/server/services/settings";
 import { fmtMoney, fmtPct, fmtQty } from "@/lib/decimal";
 import { Card, Kpi, PageHeader, Empty, LinkButton, Badge, StatusBadge, cx } from "@/components/ui";
 import { PeriodPicker } from "@/components/period";
+import { CountUp } from "@/components/count-up";
 import { RevenueTrend, HBar, StockBars } from "@/components/charts";
 
 export const metadata = { title: "Overview" };
@@ -33,14 +34,65 @@ export default async function Overview({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <PageHeader
-        title={`Good ${greeting()}, ${u.name.split(" ")[0]}`}
-        description={fin ? `${period.label} · revenue recognized on dispatch · gross profit after direct freight` : "Operational overview"}
-        actions={fin ? <PeriodPicker current={period.key} /> : undefined}
-      />
-
+      <section className="hero rise mb-5 p-6 md:p-8">
+        <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">California Sulphur Company · Command Center</div>
+            <h1 className="mt-2 text-[30px] font-semibold tracking-tight md:text-[34px]">Good {greeting()}, <span className="gold-text">{u.name.split(" ")[0]}</span></h1>
+            <p className="mt-1 text-sm text-white/60">{fin ? `${period.label} · revenue recognized on dispatch · gross profit after direct freight` : "Operational overview"}</p>
+          </div>
+          {fin && <div data-theme="dark" className="rounded-xl bg-white/5 p-1 text-fg ring-1 ring-white/10 backdrop-blur"><PeriodPicker current={period.key} /></div>}
+        </div>
+        <div className="stagger relative z-10 mt-7 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {f ? (
+            <>
+          <Link href="/analytics" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Revenue</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight"><CountUp value={f.totals.revenue.toNumber()} format="usd" /></div>
+            <div className="mt-2 text-xs text-white/55">{fmtQty(f.totals.quantity)} {unit} shipped</div>
+          </Link>
+          <Link href="/analytics" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Gross profit</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight gold-text"><CountUp value={gp(f.totals).toNumber()} format="usd" /></div>
+            <div className="mt-2 text-xs text-white/55"><span className="text-gold">{fmtPct(margin(f.totals))}</span> margin after freight</div>
+          </Link>
+            </>
+          ) : (
+            <>
+          <Link href="/sales?tab=orders" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Open sales orders</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight">{pipe.orders.length}</div>
+            <div className="mt-2 text-xs text-white/55">Awaiting fulfilment</div>
+          </Link>
+          <Link href="/logistics" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Pending shipments</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight">{pipe.shipments.length}</div>
+            <div className="mt-2 text-xs text-white/55">Planned or in transit</div>
+          </Link>
+            </>
+          )}
+          <Link href="/inventory" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Inventory on hand</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight"><CountUp value={snap.totals.onHand.toNumber()} format="num" /> <span className="text-lg font-medium text-white/60">{unit}</span></div>
+            <div className="mt-2 text-xs text-white/55">{fmtQty(snap.totals.available)} available · {fmtQty(snap.totals.reserved)} committed</div>
+          </Link>
+          {val ? (
+          <Link href="/analytics?tab=inventory" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Inventory value</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight"><CountUp value={snap.totals.value.toNumber()} format="usd" /></div>
+            <div className="mt-2 text-xs text-white/55">{snap.lots.length} active lots</div>
+          </Link>
+          ) : (
+          <Link href="/inventory" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Active lots</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight">{snap.lots.length}</div>
+            <div className="mt-2 text-xs text-white/55">Across all locations</div>
+          </Link>
+          )}
+        </div>
+      </section>
       {!setupDone && u.role === "OWNER" && (
-        <div className="card rise mb-6 flex flex-wrap items-center gap-4 border-gold/40 bg-gold-soft/40 p-4">
+        <div className="card rise mt-5 flex flex-wrap items-center gap-4 border-gold/40 bg-gold-soft/40 p-4">
           <Rocket className="text-gold" size={20} />
           <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold">Finish setting up CSC Command</div>
@@ -50,23 +102,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        {f ? (
-          <>
-            <Kpi label="Revenue" href="/analytics" value={fmtMoney(f.totals.revenue, "USD", 0)} sub={`${fmtQty(f.totals.quantity)} ${unit} shipped`} />
-            <Kpi label="Gross profit" href="/analytics" value={fmtMoney(gp(f.totals), "USD", 0)} tone={gp(f.totals).lt(0) ? "crit" : undefined} sub={`${fmtPct(margin(f.totals))} margin after freight`} />
-          </>
-        ) : (
-          <>
-            <Kpi label="Open sales orders" href="/sales?tab=orders" value={pipe.orders.length} />
-            <Kpi label="Pending shipments" href="/logistics" value={pipe.shipments.length} />
-          </>
-        )}
-        <Kpi label="Inventory on hand" href="/inventory" value={snap.mixedUnits ? fmtQty(snap.totals.onHand) : `${fmtQty(snap.totals.onHand)} ${unit}`} sub={`${fmtQty(snap.totals.available)} available · ${fmtQty(snap.totals.reserved)} committed`} />
-        {val ? <Kpi label="Inventory value" href="/analytics?tab=inventory" value={fmtMoney(snap.totals.value, "USD", 0)} sub={`${snap.lots.length} active lots`} /> : <Kpi label="Active lots" href="/inventory" value={snap.lots.length} />}
-      </div>
-
-      <div className="card rise mt-4 grid grid-cols-2 divide-line sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
+      <div className="card rise mt-5 grid grid-cols-2 divide-line sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
         {[
           ["Open quotes", pipe.quotes.length, "/sales?tab=quotes", FileText],
           ["Sales orders", pipe.orders.length, "/sales?tab=orders", ClipboardList],

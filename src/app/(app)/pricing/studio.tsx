@@ -171,12 +171,13 @@ export function PricingStudio({ products, customers, initial, defaultMinMargin, 
             ))}
             {!rows.length && <p className="px-5 py-4 text-sm text-fg-2">Add the costs that apply to this sale.</p>}
           </div>
-          <div className="flex flex-wrap gap-1.5 border-t border-line px-5 py-3">
-            {CATEGORIES.map((c) => (
-              <button key={c[0]} onClick={() => addRow(c)} className="inline-flex items-center gap-1 rounded-md border border-dashed border-line px-2 py-1 text-[11.5px] text-fg-2 hover:border-accent hover:text-accent">
-                <Plus size={11} />{c[1]}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 border-t border-line px-5 py-3">
+            <Plus size={14} className="text-accent" aria-hidden />
+            <select aria-label="Add a cost" value="" onChange={(e) => { const c = CATEGORIES.find((x) => x[0] === e.target.value); if (c) addRow(c); }} className="cursor-pointer bg-transparent text-[13px] font-medium text-accent outline-none">
+              <option value="">Add a cost…</option>
+              {CATEGORIES.map((c) => <option key={c[0]} value={c[0]}>{c[1]}</option>)}
+            </select>
+            <span className="ml-auto num text-xs text-fg-3">{r ? `${fmtMoney(r.landedUnitCost)} landed / ${unit}` : ""}</span>
           </div>
         </Card>
       </div>
@@ -228,9 +229,12 @@ export function PricingStudio({ products, customers, initial, defaultMinMargin, 
 
       {matrix && r && (
         <Card className="xl:col-span-2" title="Sensitivity — order profit" action={
-          <div className="flex items-center gap-2 text-xs text-fg-2">
-            Price step <input aria-label="Price step percent" value={step} onChange={(e) => setStep(e.target.value)} className={cx(inputClass, "num h-7 w-14 px-2 text-right")} />%
-            <span className="ml-2">Cost step $</span><input aria-label="Cost step" value={costStep} onChange={(e) => setCostStep(e.target.value)} className={cx(inputClass, "num h-7 w-16 px-2 text-right")} />/{unit}
+          <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-fg-3">
+            <span>Steps:</span>
+            <input aria-label="Price step percent" value={step} onChange={(e) => setStep(e.target.value)} className="num h-7 !w-12 rounded-md border border-line bg-surface px-1.5 text-right text-fg" />
+            <span>% price ·</span>
+            <input aria-label="Cost step" value={costStep} onChange={(e) => setCostStep(e.target.value)} className="num h-7 !w-12 rounded-md border border-line bg-surface px-1.5 text-right text-fg" />
+            <span>$ cost</span>
           </div>
         } pad={false}>
           <div className="overflow-x-auto p-4">

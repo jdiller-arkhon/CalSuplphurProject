@@ -24,6 +24,7 @@ const securityHeaders = [
 
 const config: NextConfig = {
   poweredByHeader: false,
+  devIndicators: false,
   serverExternalPackages: ["pdfkit", "exceljs", "pptxgenjs", "@node-rs/argon2"],
   experimental: { serverActions: { bodySizeLimit: "26mb" } },
   async headers() {

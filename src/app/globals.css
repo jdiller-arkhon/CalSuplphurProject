@@ -104,9 +104,10 @@ body {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--shadow);
 }
+[data-theme="dark"] .card { box-shadow: none; }
 .skeleton {
   background: linear-gradient(90deg, var(--surface-2), var(--border), var(--surface-2));
   background-size: 200% 100%;

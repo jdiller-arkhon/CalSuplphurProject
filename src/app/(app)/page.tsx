@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, DollarSign, PackageCheck, Lock, TrendingUp, Percent, FileText, ClipboardList, Truck, ShoppingCart, AlertTriangle, Sparkles, ArrowRight, Rocket } from "lucide-react";
+import { Boxes, TrendingUp, FileText, ClipboardList, Truck, ShoppingCart, AlertTriangle, Sparkles, ArrowRight, Rocket } from "lucide-react";
 import { requireUser, can } from "@/server/auth";
 import { db } from "@/server/db";
 import { financials, insights, inventorySnapshot, parsePeriod, pipeline, gp, margin } from "@/server/services/metrics";
@@ -50,19 +50,40 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <Kpi label="Inventory on hand" icon={Boxes} href="/inventory" value={snap.mixedUnits ? fmtQty(snap.totals.onHand) : `${fmtQty(snap.totals.onHand)} ${unit}`} sub={snap.mixedUnits ? "Mixed units — see Inventory" : `${snap.lots.length} active lots`} />
-        <Kpi label="Available" icon={PackageCheck} href="/inventory" value={fmtQty(snap.totals.available)} sub={`${unit} unreserved`} />
-        <Kpi label="Committed" icon={Lock} href="/inventory?view=reservations" value={fmtQty(snap.totals.reserved)} sub={`${unit} reserved to orders`} />
-        {val && <Kpi label="Inventory valuation" icon={DollarSign} href="/analytics?tab=inventory" value={fmtMoney(snap.totals.value, "USD", 0)} sub="Lot cost basis" />}
-        {f && <Kpi label="Revenue" icon={TrendingUp} href="/analytics" value={fmtMoney(f.totals.revenue, "USD", 0)} sub={`${fmtQty(f.totals.quantity)} ${unit} shipped`} />}
-        {f && <Kpi label="Gross profit" icon={DollarSign} href="/analytics" value={fmtMoney(gp(f.totals), "USD", 0)} tone={gp(f.totals).lt(0) ? "crit" : undefined} sub="After COGS & direct freight" />}
-        {f && <Kpi label="Gross margin" icon={Percent} href="/analytics" value={fmtPct(margin(f.totals))} sub="On recognized revenue" />}
-        <Kpi label="Open quotes" icon={FileText} href="/sales?tab=quotes" value={pipe.quotes.length} sub={fin ? fmtMoney(pipe.openQuoteValue, "USD", 0) : undefined} />
-        <Kpi label="Open sales orders" icon={ClipboardList} href="/sales?tab=orders" value={pipe.orders.length} sub={fin ? `${fmtMoney(pipe.openOrderValue, "USD", 0)} unshipped` : undefined} />
-        <Kpi label="Pending shipments" icon={Truck} href="/logistics" value={pipe.shipments.length} sub={`${pipe.shipments.filter((s) => s.status === "IN_TRANSIT").length} in transit`} />
-        <Kpi label="Outstanding POs" icon={ShoppingCart} href="/purchasing" value={pipe.pos.length} sub={val ? fmtMoney(pipe.poOutstandingValue, "USD", 0) : undefined} />
-        <Kpi label="Needs attention" icon={AlertTriangle} href="/notifications" value={attention} tone={attention ? "warn" : "pos"} sub={attention ? "Reorders & approvals" : "All clear"} />
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        {f ? (
+          <>
+            <Kpi label="Revenue" href="/analytics" value={fmtMoney(f.totals.revenue, "USD", 0)} sub={`${fmtQty(f.totals.quantity)} ${unit} shipped`} />
+            <Kpi label="Gross profit" href="/analytics" value={fmtMoney(gp(f.totals), "USD", 0)} tone={gp(f.totals).lt(0) ? "crit" : undefined} sub={`${fmtPct(margin(f.totals))} margin after freight`} />
+          </>
+        ) : (
+          <>
+            <Kpi label="Open sales orders" href="/sales?tab=orders" value={pipe.orders.length} />
+            <Kpi label="Pending shipments" href="/logistics" value={pipe.shipments.length} />
+          </>
+        )}
+        <Kpi label="Inventory on hand" href="/inventory" value={snap.mixedUnits ? fmtQty(snap.totals.onHand) : `${fmtQty(snap.totals.onHand)} ${unit}`} sub={`${fmtQty(snap.totals.available)} available · ${fmtQty(snap.totals.reserved)} committed`} />
+        {val ? <Kpi label="Inventory value" href="/analytics?tab=inventory" value={fmtMoney(snap.totals.value, "USD", 0)} sub={`${snap.lots.length} active lots`} /> : <Kpi label="Active lots" href="/inventory" value={snap.lots.length} />}
+      </div>
+
+      <div className="card rise mt-4 grid grid-cols-2 divide-line sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
+        {[
+          ["Open quotes", pipe.quotes.length, "/sales?tab=quotes", FileText],
+          ["Sales orders", pipe.orders.length, "/sales?tab=orders", ClipboardList],
+          ["Shipments", pipe.shipments.length, "/logistics", Truck],
+          ["Purchase orders", pipe.pos.length, "/purchasing", ShoppingCart],
+          ["Needs attention", attention, "/notifications", AlertTriangle],
+        ].map(([label, n, href, Icon]) => {
+          const I = Icon as typeof FileText;
+          const warn = label === "Needs attention" && Number(n) > 0;
+          return (
+            <Link key={label as string} href={href as string} className="group flex items-center gap-3 px-5 py-4 hover:bg-surface-2/60">
+              <I size={16} className={warn ? "text-warn" : "text-fg-3 group-hover:text-accent"} aria-hidden />
+              <span className="text-[13px] text-fg-2">{label as string}</span>
+              <span className={cx("num ml-auto text-[15px] font-semibold", warn ? "text-warn" : "text-fg")}>{n as number}</span>
+            </Link>
+          );
+        })}
       </div>
 
       {productCount === 0 ? (
@@ -72,7 +93,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
           </Empty>
         </Card>
       ) : (
-        <div className="mt-6 grid gap-6 xl:grid-cols-3">
+        <div className="mt-8 grid gap-6 xl:grid-cols-3">
           {f && (
             <Card className="xl:col-span-2" title="Financial performance" action={<Link href="/analytics" className="text-xs font-medium text-accent">Analytics →</Link>}>
               {f.facts.length ? <RevenueTrend data={trend} /> : <Empty icon={TrendingUp} title="No shipments in this period">Revenue is recognized when sales-order product is dispatched. Try a wider date range.</Empty>}

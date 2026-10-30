@@ -125,7 +125,7 @@ export function calculatePrice(input: PricingInput): PricingResult {
   const breakEven = unitAmt(solvePrice("TARGET_PROFIT", F, r, new D(0)));
   let minPrice: Dec | null = null;
   let below = false;
-  if (input.minMarginPct !== undefined && input.minMarginPct !== null && input.minMarginPct !== "") {
+  if (!F.isZero() && input.minMarginPct !== undefined && input.minMarginPct !== null && input.minMarginPct !== "") {
     const mm = dec(input.minMarginPct);
     if (mm.gte(0) && mm.lt(1) && new D(1).minus(mm).minus(r).gt(0)) {
       minPrice = unitAmt(solvePrice("MARGIN", F, r, mm));

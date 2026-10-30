@@ -51,6 +51,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
         actions={can(u, "reports.generate") ? <LinkButton variant="secondary" href="/api/export/xlsx?report=pricing"><Download size={14} /> Scenarios (Excel)</LinkButton> : undefined}
       />
       <PricingStudio key={sp.scenario ?? sp.product ?? "new"} products={sProducts} customers={customers} initial={initial} defaultMinMargin={defMin} canQuote={can(u, "quotes.manage")} />
+      {scenarios.length > 0 && (
       <Card className="mt-6" title="Pricing history" pad={false}>
         {scenarios.length ? (
           <Table head={["Saved", "Scenario", "Product", "Customer", "Qty", "Method", "Landed cost", "Recommended", "Final", "Margin", "Quote", ""]}>
@@ -75,9 +76,10 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
             })}
           </Table>
         ) : (
-          <p className="px-5 py-6 text-sm text-fg-2">Saved scenarios appear here with their full cost inputs, so prices can be audited and reused.</p>
+          null
         )}
       </Card>
+      )}
     </>
   );
 }

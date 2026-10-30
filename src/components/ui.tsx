@@ -31,8 +31,8 @@ export function Card({ className, children, title, action, pad = true }: { class
   return (
     <section className={cx("card rise", className)}>
       {(title || action) && (
-        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
-          <h2 className="text-[13px] font-semibold tracking-tight text-fg">{title}</h2>
+        <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-1">
+          <h2 className="text-[13.5px] font-semibold tracking-tight text-fg">{title}</h2>
           {action}
         </div>
       )}
@@ -43,7 +43,7 @@ export function Card({ className, children, title, action, pad = true }: { class
 
 export function PageHeader({ title, description, actions, crumbs }: { title: string; description?: ReactNode; actions?: ReactNode; crumbs?: { label: string; href?: string }[] }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         {crumbs && (
           <nav aria-label="Breadcrumb" className="mb-1.5 flex items-center gap-1.5 text-xs text-fg-3">
@@ -55,7 +55,7 @@ export function PageHeader({ title, description, actions, crumbs }: { title: str
             ))}
           </nav>
         )}
-        <h1 className="truncate text-[22px] font-semibold tracking-tight text-fg">{title}</h1>
+        <h1 className="truncate text-[24px] font-semibold tracking-tight text-fg">{title}</h1>
         {description && <p className="mt-1 max-w-2xl text-sm text-fg-2">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -89,12 +89,12 @@ export function StatusBadge({ status }: { status: string }) {
 
 export function Kpi({ label, value, sub, href, tone, icon: Icon }: { label: string; value: ReactNode; sub?: ReactNode; href?: string; tone?: Tone; icon?: LucideIcon }) {
   const body = (
-    <div className="card rise group h-full p-4 transition hover:border-line-strong">
-      <div className="flex items-center justify-between text-[12px] font-medium text-fg-2">
+    <div className="card rise group h-full p-5 transition hover:border-line-strong hover:shadow-[var(--shadow-lg)]">
+      <div className="flex items-center gap-2 text-[12.5px] font-medium text-fg-2">
+        {Icon && <Icon size={14} className="text-fg-3 group-hover:text-accent" aria-hidden />}
         <span>{label}</span>
-        {Icon && <Icon size={15} className="text-fg-3 group-hover:text-accent" aria-hidden />}
       </div>
-      <div className={cx("num mt-2 text-[22px] font-semibold tracking-tight", tone === "crit" ? "text-crit" : tone === "warn" ? "text-warn" : tone === "pos" ? "text-pos" : "text-fg")}>{value}</div>
+      <div className={cx("num mt-3 text-[26px] font-semibold tracking-tight", tone === "crit" ? "text-crit" : tone === "warn" ? "text-warn" : tone === "pos" ? "text-pos" : "text-fg")}>{value}</div>
       {sub && <div className="mt-1 text-xs text-fg-3">{sub}</div>}
     </div>
   );

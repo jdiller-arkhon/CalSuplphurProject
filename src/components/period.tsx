@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cx } from "./ui";
 
@@ -21,17 +22,21 @@ export function PeriodPicker({ current }: { current: string }) {
     for (const [k, v] of Object.entries(params)) v ? n.set(k, v) : n.delete(k);
     router.push(`${path}?${n.toString()}`);
   };
+  const [custom, setCustom] = useState(current === "custom");
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex rounded-lg border border-line bg-surface p-0.5" role="group" aria-label="Date range">
+      <div className="flex rounded-lg bg-surface-2 p-0.5" role="group" aria-label="Date range">
         {RANGES.map(([k, l]) => (
-          <button key={k} onClick={() => go({ range: k, from: undefined, to: undefined })} aria-pressed={current === k} className={cx("rounded-md px-2.5 py-1 text-xs font-medium transition", current === k ? "bg-accent text-white" : "text-fg-2 hover:text-fg")}>
+          <button key={k} onClick={() => go({ range: k, from: undefined, to: undefined })} aria-pressed={current === k} className={cx("rounded-md px-2.5 py-1 text-xs font-medium transition", current === k ? "bg-surface text-fg shadow-sm" : "text-fg-2 hover:text-fg")}>
             {l}
           </button>
         ))}
       </div>
+      <button onClick={() => setCustom((v) => !v)} aria-pressed={custom} className={cx("rounded-md px-2.5 py-1 text-xs font-medium", current === "custom" ? "bg-accent text-white" : "text-fg-2 hover:text-fg")}>Custom</button>
+      {custom && <>
       <input type="date" aria-label="From" defaultValue={sp.get("from") ?? ""} onChange={(e) => go({ range: "custom", from: e.target.value })} className="h-8 rounded-lg border border-line bg-surface px-2 text-xs text-fg" />
       <input type="date" aria-label="To" defaultValue={sp.get("to") ?? ""} onChange={(e) => go({ range: "custom", to: e.target.value })} className="h-8 rounded-lg border border-line bg-surface px-2 text-xs text-fg" />
+      </>}
     </div>
   );
 }

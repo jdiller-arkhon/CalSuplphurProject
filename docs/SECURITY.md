@@ -18,7 +18,8 @@
 | Audit | Append-only log of sign-ins, failures, every create/update/approve/ship/receive/reverse, role and user changes, exports and downloads |
 | Secrets | Only via environment variables; `.env` is git-ignored; no secrets in the repository |
 | Data at rest/in transit | Use managed Postgres with encryption at rest and `sslmode=require`; HTTPS enforced by the host; backups encrypted with AES-256 (`scripts/backup.sh`) |
-| Email / AI | No outbound email and no data sent to AI services. Invitation and recovery links are shown once to the owner, who sends them personally |
+| AI assistant | CSC Insights talks only to `LOCAL_LLM_URL`, a model the company hosts (the setup script binds it to localhost). It is off until an owner turns it on, is read-only (no tool writes data), applies the user's permissions before any data reaches the model, rate-limits questions, and logs each question in the audit log. Figures are computed by the app; model wording that contains numbers not in the data, or that misses the computed answer, is replaced. |
+| Email | No outbound email. Invitation and recovery links are shown once to the owner, who sends them personally |
 
 ## Recovery
 

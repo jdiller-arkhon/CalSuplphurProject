@@ -30,6 +30,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: "/analytics", label: "Analytics", icon: "LineChart", perm: "finance.view" },
       { href: "/reports", label: "Reports", icon: "Presentation", perm: "reports.generate" },
+      { href: "/insights", label: "CSC Insights", icon: "Sparkles" },
       { href: "/documents", label: "Documents", icon: "FolderLock", perm: "documents.view" },
     ],
   },

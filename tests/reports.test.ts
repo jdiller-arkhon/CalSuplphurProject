@@ -109,5 +109,7 @@ describe("quote pdf", () => {
     const buf = await quotePdf(quoteId);
     expect(buf.subarray(0, 5).toString()).toBe("%PDF-");
     expect(buf.length).toBeGreaterThan(1500);
+    // Exactly one page for a single-line quote (footer must not spill onto a blank page).
+    expect((buf.toString("latin1").match(/\/Type \/Page\b/g) ?? []).length).toBe(1);
   });
 });

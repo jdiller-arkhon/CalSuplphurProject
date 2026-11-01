@@ -64,8 +64,10 @@ export async function quotePdf(quoteId: string): Promise<Buffer> {
     y = doc.y + 14;
   }
   doc.font("Helvetica").fontSize(8.5).fillColor(MUTED).text(`Prices are valid until ${q.validUntil.toLocaleDateString("en-US", { dateStyle: "long" })} and are subject to product availability. Quantities are in ${[...new Set(q.lines.map((l) => l.product.unitCode))].join(", ")}.`, L, Math.max(y, doc.page.height - 110), { width: R - L });
+  // Footer sits inside the bottom margin; drop the margin so pdfkit doesn't start a new page for it.
+  doc.page.margins.bottom = 0;
   doc.moveTo(L, doc.page.height - 66).lineTo(R, doc.page.height - 66).lineWidth(0.5).strokeColor(LINE).stroke();
-  doc.fontSize(8).fillColor(MUTED).text(`${co.name || "California Sulphur Company"} · ${q.number}`, L, doc.page.height - 58, { width: R - L, align: "center" });
+  doc.fontSize(8).fillColor(MUTED).text(`${co.name || "California Sulphur Company"} · ${q.number}`, L, doc.page.height - 58, { width: R - L, align: "center", lineBreak: false });
   doc.end();
   return done;
 }

@@ -46,13 +46,3 @@ The bell shows alerts created from your data: low stock, quotes waiting for appr
 ## Audit log
 
 **Settings → Audit log** lists every change, sign-in, export and document download, with who and when. It can't be edited.
-
-
-## Personalizing CSC Command
-
-Every user's settings are their own and follow them to any device.
-
-- **Settings → Preferences**: theme, accent colour, text size, density, animation (Full / Subtle / Off), page header style (Full / Compact / Minimal), sidebar (expanded or icons only), start page after sign-in, and up to six pinned sidebar pages. Hidden pages stay reachable through search (⌘K). Changes preview instantly; **Save preferences** keeps them. **Reset to defaults** restores everything, including the Overview layout.
-- **Overview → Customize**: show or hide each section, change the order, and choose which sections span two columns.
-- **Keyboard shortcuts** (press `?` for the list): `g` then a letter to jump to a page (`g i` Inventory, `g c` Pricing Studio, `g s` Sales…), `/` or ⌘K to search, `[` to collapse the sidebar, `t` to switch light/dark.
-- Preferences only change how the app looks for you. They never change permissions, data or what other users see.

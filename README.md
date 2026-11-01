@@ -14,7 +14,6 @@ Private operations and intelligence platform for California Sulphur Company: inv
 - **Analytics** — products, customers, orders, inventory and operations with period comparison and drill-down.
 - **Reports** — editable PowerPoint decks (5 templates + custom builder), formatted Excel workbooks (8 reports), quote PDFs.
 - **Documents** — private library for SDS, COA, specs and shipping papers with versions and access control.
-- **Personalization** — per-user theme, six accent colours, text size, density, animation level, header style, start page, pinned/hidden sidebar pages, collapsible sidebar, customizable Overview, keyboard shortcuts (press `?`).
 - **Admin** — invitation-only users, roles & permissions, MFA, audit log, Excel/CSV import with validation preview, guided setup, notifications.
 
 ## Quick start (development)
@@ -35,7 +34,7 @@ Optional, development database only: `APP_ENV=development npm run db:dev-sample`
 
 ```bash
 createdb csc_test && DATABASE_URL=postgresql://…/csc_test npx prisma migrate deploy
-npm test                         # 71 unit + integration tests (pricing, ledger, workflows, plant, exports, import)
+npm test                         # 66 unit + integration tests (pricing, ledger, workflows, plant, exports, import)
 npm run build && npm start -p 3001
 BASE_URL=http://localhost:3001 OWNER_EMAIL=… OWNER_PASSWORD=… node e2e/smoke.mjs        # 67 end-to-end checks
 BASE_URL=http://localhost:3001 OWNER_EMAIL=… OWNER_PASSWORD=… node e2e/permissions.mjs  # 18 access-control checks

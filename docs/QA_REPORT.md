@@ -11,8 +11,7 @@ All results below were produced by running the suites in this repository against
 | `tests/plant.test.ts` | Scale ticket net weight & kg→MT; tare validation; posting in/out; production run consumption, output cost and yield; over-consumption refused; idempotency; vessel day upsert | **7 / 7 pass** |
 | `tests/reports.test.ts` | All 8 Excel workbooks (frozen header, formulas reference valid cells, totals reconcile to the engine, formula-injection escaping); all 6 PowerPoint templates (native charts, real figures); quote PDF validity and single page | **19 / 19 pass** |
 | `tests/import.test.ts` | Header auto-matching; CSV quoting and currency cleanup; duplicate and invalid-row detection; refusal unless skipping is chosen; skipped rows recorded; beginning inventory via ledger | **5 / 5 pass** |
-| `tests/prefs.test.ts` | Preference parsing: per-field fallback, page allow-list for start page/pins/hidden, overview order completeness, unknown widgets | **5 / 5 pass** |
-| **Total unit + integration** | | **71 / 71 pass** |
+| **Total unit + integration** | | **66 / 66 pass** |
 | `e2e/smoke.mjs` | Anonymous access blocked; every sidebar page and 26 more routes load without errors; 7 detail pages; search; all Excel/PowerPoint/PDF/template downloads; scale ticket through the real form; no browser errors | **67 / 67 pass** |
 | `e2e/permissions.mjs` | Invite → accept as Viewer; link single-use; 7 restricted pages redirect; valuation hidden; sidebar filtered; export APIs return 403; search filtered; deactivation ends the session | **18 / 18 pass** |
 
@@ -38,7 +37,7 @@ All results below were produced by running the suites in this repository against
 |---|---|
 | Email notifications / weekly summary | Not built — the app sends no email by design until a provider is approved |
 | Tablet "yard mode" | Built (`/yard`): large buttons for scale tickets, receiving and transfers. Other pages work on tablets but weren't screenshot-tested at tablet width |
-| Customizable dashboard layout | Built: each user can show/hide, reorder and widen Overview sections (Customize button) |
+| Customizable dashboard layout | Not built; KPIs are fixed |
 | Inventory costing / revenue recognition | Implemented as lot weighted average and recognition on dispatch — **pending company confirmation** |
 | Exchange rates | Not supported (multi-currency customers are stored, never converted) |
 | Deployment | Not performed — requires approval of hosting cost (see DEPLOYMENT.md) |

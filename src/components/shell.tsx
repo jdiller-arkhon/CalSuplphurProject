@@ -7,9 +7,6 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Command } from "cmdk";
 import * as Icons from "lucide-react";
 import { NAV, SETTINGS_ITEM, type NavItem } from "./nav";
-import type { Prefs } from "@/lib/prefs";
-import { patchPreferences } from "@/server/actions/prefs";
-import { Shortcuts } from "./shortcuts";
 import { cx } from "./ui";
 
 type IconName = keyof typeof Icons;
@@ -18,11 +15,9 @@ const Icon = ({ name, size = 16, className }: { name: string; size?: number; cla
   return C ? <C size={size} className={className} aria-hidden /> : null;
 };
 
-export function Sidebar({ perms, company, open, onClose, prefs, collapsed, onCollapse }: { perms: string[]; company: string; open: boolean; onClose: () => void; prefs: Prefs; collapsed: boolean; onCollapse: () => void }) {
+export function Sidebar({ perms, company, open, onClose }: { perms: string[]; company: string; open: boolean; onClose: () => void }) {
   const path = usePathname();
-  const allowed = (i: NavItem) => (!i.perm || perms.includes(i.perm)) && !prefs.hiddenNav.includes(i.href);
-  const all = NAV.flatMap((g) => g.items);
-  const pinned = prefs.pinned.map((h) => all.find((i) => i.href === h)).filter((i): i is NavItem => !!i && allowed(i));
+  const allowed = (i: NavItem) => !i.perm || perms.includes(i.perm);
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   const link = (i: NavItem) => (
     <Link
@@ -30,7 +25,6 @@ export function Sidebar({ perms, company, open, onClose, prefs, collapsed, onCol
       href={i.href}
       onClick={onClose}
       aria-current={active(i.href) ? "page" : undefined}
-      title={collapsed ? i.label : undefined}
       className={cx(
         "group relative flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] font-medium transition",
         active(i.href) ? "nav-active text-white" : "text-sidebar-fg hover:bg-white/5 hover:text-white",
@@ -38,44 +32,33 @@ export function Sidebar({ perms, company, open, onClose, prefs, collapsed, onCol
     >
       {active(i.href) && <span className="absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r bg-gold" aria-hidden />}
       <Icon name={i.icon} className={active(i.href) ? "text-gold" : "text-sidebar-fg/70 group-hover:text-white"} />
-      <span className="nav-label">{i.label}</span>
+      {i.label}
     </Link>
   );
   return (
     <>
       <div className={cx("fixed inset-0 z-30 bg-black/40 lg:hidden", open ? "block" : "hidden")} onClick={onClose} aria-hidden />
-      <aside data-collapsed={collapsed || undefined} className={cx("sidebar-bg fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col px-3 pb-3 transition-transform lg:translate-x-0", open ? "translate-x-0" : "-translate-x-full")} aria-label="Primary">
+      <aside className={cx("sidebar-bg fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col px-3 pb-3 transition-transform lg:translate-x-0", open ? "translate-x-0" : "-translate-x-full")} aria-label="Primary">
         <Link href="/" className="flex h-16 items-center gap-2.5 px-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-[#a37c3c] text-[11px] font-bold tracking-wider text-sidebar shadow-inner">S</div>
-          <div className="nav-label leading-tight">
+          <div className="leading-tight">
             <div className="gold-text text-[14px] font-semibold tracking-tight">CSC Command</div>
             <div className="max-w-[160px] truncate text-[11px] text-sidebar-fg/70">{company || "California Sulphur Co."}</div>
           </div>
         </Link>
         <nav className="flex-1 space-y-5 overflow-y-auto pt-2">
-          {pinned.length > 0 && (
-            <div>
-              <div className="nav-label mb-1.5 flex items-center gap-1.5 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-gold/80"><Icons.Pin size={10} /> Pinned</div>
-              <div className="space-y-0.5">{pinned.map(link)}</div>
-            </div>
-          )}
           {NAV.map((g) => {
-            const items = g.items.filter(allowed).filter((i) => !pinned.includes(i));
+            const items = g.items.filter(allowed);
             if (!items.length) return null;
             return (
               <div key={g.label || "top"}>
-                {g.label && <div className="nav-label mb-1.5 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-sidebar-fg/45">{g.label}</div>}
+                {g.label && <div className="mb-1.5 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-sidebar-fg/45">{g.label}</div>}
                 <div className="space-y-0.5">{items.map(link)}</div>
               </div>
             );
           })}
         </nav>
-        <div className="space-y-0.5 border-t border-white/5 pt-3">
-          {link(SETTINGS_ITEM)}
-          <button onClick={onCollapse} className="hidden w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] font-medium text-sidebar-fg/70 hover:bg-white/5 hover:text-white lg:flex" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title="Toggle sidebar  [">
-            {collapsed ? <Icons.PanelLeftOpen size={16} /> : <Icons.PanelLeftClose size={16} />}<span className="nav-label">Collapse</span>
-          </button>
-        </div>
+        <div className="border-t border-white/5 pt-3">{link(SETTINGS_ITEM)}</div>
       </aside>
     </>
   );
@@ -234,11 +217,6 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
                   </Item>
                 ))}
               </Command.Group>
-              <Command.Group heading="Personalize">
-                <Item onSelect={() => go("/settings/preferences")}><Icons.Palette size={16} className="text-fg-3" aria-hidden />Preferences: theme, colour, density, motion</Item>
-                <Item onSelect={() => { const h = document.documentElement; const n = h.getAttribute("data-theme") === "dark" ? "light" : "dark"; h.setAttribute("data-theme", n); document.cookie = `theme=${n};path=/;max-age=31536000;samesite=lax`; onClose(); }}><Icons.SunMoon size={16} className="text-fg-3" aria-hidden />Toggle light / dark</Item>
-                <Item onSelect={() => { onClose(); setTimeout(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "?" })), 50); }}><Icons.Keyboard size={16} className="text-fg-3" aria-hidden />Keyboard shortcuts</Item>
-              </Command.Group>
             </>
           )}
         </Command.List>
@@ -254,24 +232,15 @@ function Item({ children, onSelect }: { children: React.ReactNode; onSelect: () 
   );
 }
 
-export function AppFrame({ children, perms, user, unread, company, prefs }: { children: React.ReactNode; perms: string[]; user: { name: string; email: string; role: string }; unread: number; company: string; prefs: Prefs }) {
+export function AppFrame({ children, perms, user, unread, company }: { children: React.ReactNode; perms: string[]; user: { name: string; email: string; role: string }; unread: number; company: string }) {
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(prefs.sidebar === "collapsed");
-  const toggleCollapse = () => setCollapsed((c) => { const n = !c; patchPreferences({ sidebar: n ? "collapsed" : "expanded" }).catch(() => {}); return n; });
-  useEffect(() => {
-    const h = document.documentElement;
-    h.dataset.accent = prefs.accent; h.dataset.density = prefs.density; h.dataset.motion = prefs.motion; h.dataset.hero = prefs.hero;
-    h.style.fontSize = prefs.textSize === "100" ? "" : `${prefs.textSize}%`;
-    if (prefs.theme !== "system") h.setAttribute("data-theme", prefs.theme);
-  }, [prefs]);
   return (
-    <div className="min-h-screen" data-accent={prefs.accent} data-density={prefs.density} data-motion={prefs.motion} data-hero={prefs.hero}>
-      <Sidebar perms={perms} company={company} open={open} onClose={() => setOpen(false)} prefs={prefs} collapsed={collapsed} onCollapse={toggleCollapse} />
-      <div className={cx("transition-[padding] duration-300", collapsed ? "lg:pl-[76px]" : "lg:pl-[248px]")}>
+    <div className="min-h-screen">
+      <Sidebar perms={perms} company={company} open={open} onClose={() => setOpen(false)} />
+      <div className="lg:pl-[248px]">
         <Header user={user} unread={unread} onMenu={() => setOpen(true)} />
-        <main className="mx-auto max-w-[1440px] px-4 py-7 md:px-8">{prefs.motion !== "off" && <MotionFx subtle={prefs.motion === "subtle"} />}{children}</main>
+        <main className="mx-auto max-w-[1440px] px-4 py-7 md:px-8"><MotionFx />{children}</main>
       </div>
-      {prefs.shortcuts && <Shortcuts perms={perms} hidden={prefs.hiddenNav} onToggleSidebar={toggleCollapse} />}
     </div>
   );
 }

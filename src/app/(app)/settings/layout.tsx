@@ -7,7 +7,6 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   const tabs: [string, string][] = [
     ...(can(u, "settings.manage") ? ([["/settings", "Company & policies"]] as [string, string][]) : []),
     ...(can(u, "users.manage") ? ([["/settings/users", "Users"], ["/settings/roles", "Roles & permissions"]] as [string, string][]) : []),
-    ["/settings/preferences", "Preferences"],
     ["/settings/security", "My security"],
     ...(can(u, "import.run") ? ([["/settings/import", "Import data"]] as [string, string][]) : []),
     ...(can(u, "audit.view") ? ([["/settings/audit", "Audit log"]] as [string, string][]) : []),

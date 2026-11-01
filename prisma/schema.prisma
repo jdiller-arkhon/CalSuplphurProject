@@ -36,7 +36,6 @@ model User {
   sessions       Session[]
   auditEvents    AuditEvent[]
   notifications  Notification[]
-  preferences    Json      @default("{}") // per-user UI preferences (see src/lib/prefs.ts)
 }
 
 model Session {

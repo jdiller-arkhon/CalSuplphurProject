@@ -2,9 +2,9 @@
 import { useEffect } from "react";
 
 /** One delegated pointer listener: hero parallax + spotlight, card tilt + shine. */
-export function MotionFx({ subtle = false }: { subtle?: boolean }) {
+export function MotionFx() {
   useEffect(() => {
-    if (subtle || matchMedia("(prefers-reduced-motion: reduce)").matches || !matchMedia("(pointer: fine)").matches) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !matchMedia("(pointer: fine)").matches) return;
     let raf = 0, ev: PointerEvent | null = null, lastCard: HTMLElement | null = null;
     const apply = () => {
       raf = 0; if (!ev) return;
@@ -32,6 +32,6 @@ export function MotionFx({ subtle = false }: { subtle?: boolean }) {
     document.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerout", onLeave, { passive: true });
     return () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerout", onLeave); cancelAnimationFrame(raf); };
-  }, [subtle]);
+  }, []);
   return null;
 }

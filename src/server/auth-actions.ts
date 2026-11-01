@@ -31,7 +31,7 @@ export async function loginAction(_: ActionState, fd: FormData): Promise<ActionS
   await db.user.update({ where: { id: user.id }, data: { failedLogins: 0, lockedUntil: null, lastLoginAt: new Date() } });
   await createSession(user.id, !user.mfaSecret);
   await audit(db, { userId: user.id, action: "auth.login", entity: "User", entityId: user.id, summary: "Signed in" });
-  redirect(user.mfaSecret ? "/login/mfa" : "/");
+  redirect(user.mfaSecret ? "/login/mfa" : "/start");
 }
 
 export async function mfaAction(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -41,7 +41,7 @@ export async function mfaAction(_: ActionState, fd: FormData): Promise<ActionSta
   const code = String(fd.get("code") ?? "").replace(/\s/g, "");
   if (!totp.check(code, s.user.mfaSecret!)) return { error: "That code is not valid. Check your authenticator app's clock and try again." };
   await markMfaPassed();
-  redirect("/");
+  redirect("/start");
 }
 
 export async function logout() {

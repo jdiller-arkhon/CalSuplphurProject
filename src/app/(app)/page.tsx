@@ -9,6 +9,8 @@ import { Card, Kpi, PageHeader, Empty, LinkButton, Badge, StatusBadge, cx } from
 import { PeriodPicker } from "@/components/period";
 import { CountUp } from "@/components/count-up";
 import { RevenueTrend, HBar, StockBars } from "@/components/charts";
+import { parsePrefs } from "@/lib/prefs";
+import { OverviewCustomizer } from "./customize";
 
 export const metadata = { title: "Overview" };
 
@@ -28,9 +30,143 @@ export default async function Overview({ searchParams }: { searchParams: Promise
     db.inventoryMovement.findMany({ take: 8, orderBy: { at: "desc" }, include: { product: true, lot: { include: { location: true } } } }),
     can(u, "audit.view") ? db.auditEvent.findMany({ take: 6, orderBy: { at: "desc" }, include: { user: true } }) : [],
   ]);
+  const prefRow = await db.user.findUnique({ where: { id: u.id }, select: { preferences: true } });
+  const prefs = parsePrefs(prefRow?.preferences);
+  const layout = prefs.overview;
   const unit = snap.unit;
   const attention = snap.reorder.length + pipe.pendingApproval.length;
   const trend = f?.months.map((m) => ({ label: new Date(`${m.key}-01T00:00:00`).toLocaleDateString("en-US", { month: "short" }), revenue: m.revenue.toNumber(), profit: gp(m).toNumber(), margin: margin(m) ? margin(m)!.times(100).toNumber() : null })) ?? [];
+
+  const available: Record<string, boolean> = { pipeline: true, financial: !!f, insights: !!f, stockProduct: true, stockLocation: true, profitCustomer: !!f, deliveries: true, movements: true, changes: audits.length > 0 };
+  const widgetEls: Record<string, React.ReactNode> = {
+    financial: (
+<>{f && (
+            <Card title="Financial performance" action={<Link href="/analytics" className="text-xs font-medium text-accent">Analytics →</Link>}>
+              {f.facts.length ? <RevenueTrend data={trend} /> : <Empty icon={TrendingUp} title="No shipments in this period">Revenue is recognized when sales-order product is dispatched. Try a wider date range.</Empty>}
+            </Card>
+          )}</>
+    ),
+    insights: (
+<>{f && (
+            <Card title="Executive insights" action={<Sparkles size={14} className="text-gold" />}>
+              {ins.length ? (
+                <ul className="space-y-3">
+                  {ins.slice(0, 6).map((i, k) => (
+                    <li key={k}>
+                      <Link href={i.href ?? "#"} className="group block rounded-lg border border-line p-3 hover:border-line-strong">
+                        <div className="flex items-start gap-2">
+                          <span className={cx("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", { pos: "bg-pos", warn: "bg-warn", crit: "bg-crit", accent: "bg-accent" }[i.tone])} />
+                          <div className="min-w-0">
+                            <div className="text-[13px] font-medium text-fg">{i.title}</div>
+                            <div className="mt-0.5 text-xs text-fg-2">{i.detail}</div>
+                            <div className="mt-1 text-[10.5px] uppercase tracking-wide text-fg-3">Source: {i.source}</div>
+                          </div>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-fg-2">No significant changes, cost increases, margin exceptions or stock warnings for this period.</p>
+              )}
+            </Card>
+          )}</>
+    ),
+    stockProduct: (
+<Card title="Stock by product" action={<Badge>{unit}</Badge>}>
+            {snap.products.length ? <StockBars data={snap.products.slice(0, 8).map((p) => ({ label: p.name, available: p.available.toNumber(), reserved: p.reserved.toNumber(), href: `/products/${p.id}` }))} /> : <p className="text-sm text-fg-2">No stock on hand.</p>}
+            {snap.reorder.length > 0 && (
+              <div className="mt-3 rounded-lg bg-crit-soft px-3 py-2 text-xs text-crit">
+                Below reorder point: {snap.reorder.map((r) => r.name).join(", ")}
+              </div>
+            )}
+          </Card>
+    ),
+    stockLocation: (
+<Card title="Stock by location">
+            {snap.locations.length ? (
+              <ul className="space-y-3">
+                {snap.locations.map((l) => {
+                  const pct = l.capacity && !l.capacity.isZero() ? Math.min(100, l.onHand.div(l.capacity).times(100).toNumber()) : null;
+                  return (
+                    <li key={l.id}>
+                      <div className="flex justify-between text-sm">
+                        <Link href={`/inventory?location=${l.id}`} className="font-medium hover:text-accent">{l.name}</Link>
+                        <span className="num text-fg-2">{fmtQty(l.onHand)} {unit}{pct !== null && ` · ${pct.toFixed(0)}%`}</span>
+                      </div>
+                      {pct !== null && (
+                        <div className="mt-1.5 h-1.5 rounded-full bg-surface-2">
+                          <div className={cx("h-1.5 rounded-full", pct > 90 ? "bg-crit" : pct > 75 ? "bg-warn" : "bg-accent")} style={{ width: `${pct}%` }} />
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-sm text-fg-2">No stock on hand.</p>
+            )}
+          </Card>
+    ),
+    profitCustomer: (
+<>{f && (
+            <Card title="Profit by customer">
+              {f.byCustomer.length ? <HBar color="gold" data={f.byCustomer.slice(0, 6).map((c) => ({ label: c.label, value: gp(c).toNumber(), href: `/customers/${c.key}` }))} /> : <p className="text-sm text-fg-2">No shipped sales in this period.</p>}
+            </Card>
+          )}</>
+    ),
+    deliveries: (
+<Card title="Upcoming deliveries" action={<Link href="/logistics" className="text-xs font-medium text-accent">Logistics →</Link>} pad={false}>
+            {pipe.shipments.length ? (
+              <ul className="divide-y divide-line">
+                {pipe.shipments.slice(0, 6).map((s) => (
+                  <li key={s.id}>
+                    <Link href={`/logistics/${s.id}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-surface-2">
+                      <span className="num whitespace-nowrap text-[13px] font-medium">{s.number}</span>
+                      <span className="truncate text-xs text-fg-2">{s.order?.customer.name ?? s.destination ?? s.mode}</span>
+                      <span className="ml-auto whitespace-nowrap text-xs text-fg-3">{s.scheduledAt?.toLocaleDateString("en-US", { month: "short", day: "numeric" }) ?? "Unscheduled"}</span>
+                      <StatusBadge status={s.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="p-5 text-sm text-fg-2">No planned or in-transit shipments.</p>
+            )}
+          </Card>
+    ),
+    movements: (
+<Card title="Recent inventory movements" action={<Link href="/inventory?view=ledger" className="text-xs font-medium text-accent">Ledger →</Link>} pad={false}>
+            {recent.length ? (
+              <ul className="divide-y divide-line">
+                {recent.map((m) => (
+                  <li key={m.id} className="flex items-center gap-3 px-5 py-2.5 text-[13px]">
+                    <Badge tone={Number(m.quantity) >= 0 ? "pos" : "warn"}>{m.type.replace("_", " ").toLowerCase()}</Badge>
+                    <span className="min-w-0 flex-1 leading-tight"><span className="block truncate">{m.product.name}</span><span className="block truncate text-xs text-fg-3">{m.lot.location.code} / {m.lot.lotNumber}</span></span>
+                    <span className="num ml-auto font-medium">{Number(m.quantity) > 0 ? "+" : ""}{fmtQty(m.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="p-5 text-sm text-fg-2">No movements yet.</p>
+            )}
+          </Card>
+    ),
+    changes: (
+<>{audits.length > 0 && (
+            <Card title="Recent changes" action={<Link href="/settings/audit" className="text-xs font-medium text-accent">Audit log →</Link>} pad={false}>
+              <ul className="divide-y divide-line">
+                {audits.map((a) => (
+                  <li key={a.id} className="px-5 py-2.5 text-[13px]">
+                    <div className="truncate">{a.summary}</div>
+                    <div className="text-xs text-fg-3">{a.user?.name ?? "System"} · {a.at.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}</>
+    ),
+  };
 
   return (
     <>
@@ -38,10 +174,10 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">California Sulphur Company · Command Center</div>
-            <h1 className="mt-2 text-[30px] font-semibold tracking-tight md:text-[34px]">Good {greeting()}, <span className="gold-text">{u.name.split(" ")[0]}</span></h1>
+            <h1 className="mt-2 text-[30px] font-semibold tracking-tight md:text-[34px]">{prefs.greeting ? <>Good {greeting()}, <span className="gold-text">{u.name.split(" ")[0]}</span></> : "Overview"}</h1>
             <p className="mt-1 text-sm text-white/60">{fin ? `${period.label} · revenue recognized on dispatch · gross profit after direct freight` : "Operational overview"}</p>
           </div>
-          {fin && <div data-theme="dark" className="rounded-xl bg-white/5 p-1 text-fg ring-1 ring-white/10 backdrop-blur"><PeriodPicker current={period.key} /></div>}
+          <div className="flex flex-wrap items-center gap-2">{fin && <div data-theme="dark" className="rounded-xl bg-white/5 p-1 text-fg ring-1 ring-white/10 backdrop-blur"><PeriodPicker current={period.key} /></div>}<div data-theme="dark" className="text-fg"><OverviewCustomizer layout={layout} available={available} /></div></div>
         </div>
         <div className="stagger relative z-10 mt-7 grid grid-cols-2 gap-3 xl:grid-cols-4">
           {f ? (
@@ -102,6 +238,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         </div>
       )}
 
+      {available.pipeline && !layout.hidden.includes("pipeline") && (
       <div className="card rise mt-5 grid grid-cols-2 divide-line sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
         {[
           ["Open quotes", pipe.quotes.length, "/sales?tab=quotes", FileText],
@@ -122,6 +259,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         })}
       </div>
 
+      )}
       {productCount === 0 ? (
         <Card className="mt-6">
           <Empty icon={Boxes} title="No business data yet" action={<LinkButton href="/setup">Start guided setup</LinkButton>}>
@@ -130,117 +268,9 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         </Card>
       ) : (
         <div className="mt-8 grid gap-6 xl:grid-cols-3">
-          {f && (
-            <Card className="xl:col-span-2" title="Financial performance" action={<Link href="/analytics" className="text-xs font-medium text-accent">Analytics →</Link>}>
-              {f.facts.length ? <RevenueTrend data={trend} /> : <Empty icon={TrendingUp} title="No shipments in this period">Revenue is recognized when sales-order product is dispatched. Try a wider date range.</Empty>}
-            </Card>
-          )}
-          {f && (
-            <Card title="Executive insights" action={<Sparkles size={14} className="text-gold" />}>
-              {ins.length ? (
-                <ul className="space-y-3">
-                  {ins.slice(0, 6).map((i, k) => (
-                    <li key={k}>
-                      <Link href={i.href ?? "#"} className="group block rounded-lg border border-line p-3 hover:border-line-strong">
-                        <div className="flex items-start gap-2">
-                          <span className={cx("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", { pos: "bg-pos", warn: "bg-warn", crit: "bg-crit", accent: "bg-accent" }[i.tone])} />
-                          <div className="min-w-0">
-                            <div className="text-[13px] font-medium text-fg">{i.title}</div>
-                            <div className="mt-0.5 text-xs text-fg-2">{i.detail}</div>
-                            <div className="mt-1 text-[10.5px] uppercase tracking-wide text-fg-3">Source: {i.source}</div>
-                          </div>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-fg-2">No significant changes, cost increases, margin exceptions or stock warnings for this period.</p>
-              )}
-            </Card>
-          )}
-          <Card title="Stock by product" action={<Badge>{unit}</Badge>}>
-            {snap.products.length ? <StockBars data={snap.products.slice(0, 8).map((p) => ({ label: p.name, available: p.available.toNumber(), reserved: p.reserved.toNumber(), href: `/products/${p.id}` }))} /> : <p className="text-sm text-fg-2">No stock on hand.</p>}
-            {snap.reorder.length > 0 && (
-              <div className="mt-3 rounded-lg bg-crit-soft px-3 py-2 text-xs text-crit">
-                Below reorder point: {snap.reorder.map((r) => r.name).join(", ")}
-              </div>
-            )}
-          </Card>
-          <Card title="Stock by location">
-            {snap.locations.length ? (
-              <ul className="space-y-3">
-                {snap.locations.map((l) => {
-                  const pct = l.capacity && !l.capacity.isZero() ? Math.min(100, l.onHand.div(l.capacity).times(100).toNumber()) : null;
-                  return (
-                    <li key={l.id}>
-                      <div className="flex justify-between text-sm">
-                        <Link href={`/inventory?location=${l.id}`} className="font-medium hover:text-accent">{l.name}</Link>
-                        <span className="num text-fg-2">{fmtQty(l.onHand)} {unit}{pct !== null && ` · ${pct.toFixed(0)}%`}</span>
-                      </div>
-                      {pct !== null && (
-                        <div className="mt-1.5 h-1.5 rounded-full bg-surface-2">
-                          <div className={cx("h-1.5 rounded-full", pct > 90 ? "bg-crit" : pct > 75 ? "bg-warn" : "bg-accent")} style={{ width: `${pct}%` }} />
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="text-sm text-fg-2">No stock on hand.</p>
-            )}
-          </Card>
-          {f && (
-            <Card title="Profit by customer">
-              {f.byCustomer.length ? <HBar color="gold" data={f.byCustomer.slice(0, 6).map((c) => ({ label: c.label, value: gp(c).toNumber(), href: `/customers/${c.key}` }))} /> : <p className="text-sm text-fg-2">No shipped sales in this period.</p>}
-            </Card>
-          )}
-          <Card title="Upcoming deliveries" action={<Link href="/logistics" className="text-xs font-medium text-accent">Logistics →</Link>} pad={false}>
-            {pipe.shipments.length ? (
-              <ul className="divide-y divide-line">
-                {pipe.shipments.slice(0, 6).map((s) => (
-                  <li key={s.id}>
-                    <Link href={`/logistics/${s.id}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-surface-2">
-                      <span className="num whitespace-nowrap text-[13px] font-medium">{s.number}</span>
-                      <span className="truncate text-xs text-fg-2">{s.order?.customer.name ?? s.destination ?? s.mode}</span>
-                      <span className="ml-auto whitespace-nowrap text-xs text-fg-3">{s.scheduledAt?.toLocaleDateString("en-US", { month: "short", day: "numeric" }) ?? "Unscheduled"}</span>
-                      <StatusBadge status={s.status} />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="p-5 text-sm text-fg-2">No planned or in-transit shipments.</p>
-            )}
-          </Card>
-          <Card title="Recent inventory movements" action={<Link href="/inventory?view=ledger" className="text-xs font-medium text-accent">Ledger →</Link>} pad={false}>
-            {recent.length ? (
-              <ul className="divide-y divide-line">
-                {recent.map((m) => (
-                  <li key={m.id} className="flex items-center gap-3 px-5 py-2.5 text-[13px]">
-                    <Badge tone={Number(m.quantity) >= 0 ? "pos" : "warn"}>{m.type.replace("_", " ").toLowerCase()}</Badge>
-                    <span className="min-w-0 flex-1 leading-tight"><span className="block truncate">{m.product.name}</span><span className="block truncate text-xs text-fg-3">{m.lot.location.code} / {m.lot.lotNumber}</span></span>
-                    <span className="num ml-auto font-medium">{Number(m.quantity) > 0 ? "+" : ""}{fmtQty(m.quantity)}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="p-5 text-sm text-fg-2">No movements yet.</p>
-            )}
-          </Card>
-          {audits.length > 0 && (
-            <Card title="Recent changes" action={<Link href="/settings/audit" className="text-xs font-medium text-accent">Audit log →</Link>} pad={false}>
-              <ul className="divide-y divide-line">
-                {audits.map((a) => (
-                  <li key={a.id} className="px-5 py-2.5 text-[13px]">
-                    <div className="truncate">{a.summary}</div>
-                    <div className="text-xs text-fg-3">{a.user?.name ?? "System"} · {a.at.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</div>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
+          {layout.order.filter((w) => w !== "pipeline" && available[w] && !layout.hidden.includes(w)).map((w) => (
+            <div key={w} className={cx("min-w-0 [&>.card]:h-full", layout.wide.includes(w) && "xl:col-span-2")}>{widgetEls[w]}</div>
+          ))}
         </div>
       )}
     </>

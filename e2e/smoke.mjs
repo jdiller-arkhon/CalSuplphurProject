@@ -28,7 +28,7 @@ await page.waitForURL(`${BASE}/`, { waitUntil: "commit", timeout: 60000 });
 
 // Every sidebar link and key page renders without a 404 or crash
 const links = await page.$$eval("aside a[href^='/']", (as) => [...new Set(as.map((a) => a.getAttribute("href")))]);
-const extra = ["/yard", "/setup", "/notifications", "/settings/users", "/settings/roles", "/settings/security", "/settings/import", "/settings/audit", "/inventory?view=intel", "/inventory?view=ledger", "/inventory?view=reservations", "/inventory/locations", "/operations?tab=production", "/operations?tab=trucks", "/analytics?tab=products", "/analytics?tab=customers", "/analytics?tab=orders", "/analytics?tab=inventory", "/analytics?tab=operations", "/sales?tab=orders", "/sales/quotes/new", "/sales/orders/new", "/purchasing/new", "/logistics/new", "/products/new", "/customers/new", "/suppliers/new"];
+const extra = ["/yard", "/setup", "/notifications", "/settings/users", "/settings/roles", "/settings/security", "/settings/preferences", "/settings/import", "/settings/audit", "/inventory?view=intel", "/inventory?view=ledger", "/inventory?view=reservations", "/inventory/locations", "/operations?tab=production", "/operations?tab=trucks", "/analytics?tab=products", "/analytics?tab=customers", "/analytics?tab=orders", "/analytics?tab=inventory", "/analytics?tab=operations", "/sales?tab=orders", "/sales/quotes/new", "/sales/orders/new", "/purchasing/new", "/logistics/new", "/products/new", "/customers/new", "/suppliers/new"];
 for (const href of [...links, ...extra]) {
   const res = await page.goto(BASE + href, { waitUntil: "domcontentloaded" });
   const text = await page.locator("main").innerText().catch(() => "");

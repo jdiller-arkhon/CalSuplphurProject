@@ -11,8 +11,7 @@ All results below were produced by running the suites in this repository against
 | `tests/plant.test.ts` | Scale ticket net weight & kg→MT; tare validation; posting in/out; production run consumption, output cost and yield; over-consumption refused; idempotency; vessel day upsert | **7 / 7 pass** |
 | `tests/reports.test.ts` | All 8 Excel workbooks (frozen header, formulas reference valid cells, totals reconcile to the engine, formula-injection escaping); all 6 PowerPoint templates (native charts, real figures); quote PDF validity and single page | **19 / 19 pass** |
 | `tests/import.test.ts` | Header auto-matching; CSV quoting and currency cleanup; duplicate and invalid-row detection; refusal unless skipping is chosen; skipped rows recorded; beginning inventory via ledger | **5 / 5 pass** |
-| `tests/insights.test.ts` | Answers only from tool data; invented numbers discarded; wrong-pick replies replaced by the computed answer; keyword fallback; viewer can't reach financial tools or send cost data to the model; no writes | **8 / 8 pass** |
-| **Total unit + integration** | | **74 / 74 pass** |
+| **Total unit + integration** | | **66 / 66 pass** |
 | `e2e/smoke.mjs` | Anonymous access blocked; every sidebar page and 26 more routes load without errors; 7 detail pages; search; all Excel/PowerPoint/PDF/template downloads; scale ticket through the real form; no browser errors | **67 / 67 pass** |
 | `e2e/permissions.mjs` | Invite → accept as Viewer; link single-use; 7 restricted pages redirect; valuation hidden; sidebar filtered; export APIs return 403; search filtered; deactivation ends the session | **18 / 18 pass** |
 
@@ -36,7 +35,6 @@ All results below were produced by running the suites in this repository against
 
 | Item | Status |
 |---|---|
-| CSC Insights AI assistant | Built with a local model (llama.cpp + Qwen2.5-3B). 8 automated safety tests with a stub model; the 8 example questions from the brief were run against the real model and checked by hand. CPU answers take ~20–60 s |
 | Email notifications / weekly summary | Not built — the app sends no email by design until a provider is approved |
 | Tablet "yard mode" | Built (`/yard`): large buttons for scale tickets, receiving and transfers. Other pages work on tablets but weren't screenshot-tested at tablet width |
 | Customizable dashboard layout | Not built; KPIs are fixed |

@@ -1,6 +1,6 @@
 /**
  * Single source of truth for business figures. The dashboard, analytics, exports, presentations
- * and CSC Insights all call these functions, so every surface reconciles to the same records.
+ * all call these functions, so every surface reconciles to the same records.
  *
  * Definitions (operational, not accounting — see BUSINESS_ASSUMPTIONS.md):
  *  - Revenue: recognized when sales-order product is dispatched (posted shipment line), at the order line price.

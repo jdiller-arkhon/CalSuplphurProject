@@ -11,7 +11,6 @@ export const SETTING_DEFAULTS = {
   "revenue.recognition": "ON_SHIPMENT", // operational view; not an accounting determination
   "alerts.thresholds": { quoteExpiryDays: 5, costChangePct: "0.10", overdueShipmentDays: 1, poOverdueDays: 0 },
   "setup.completed": false,
-  "ai.enabled": false,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

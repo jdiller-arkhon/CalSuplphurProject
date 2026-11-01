@@ -1,3 +1,4 @@
+import { HeroArt } from "./hero-art";
 import Link from "next/link";
 import { clsx } from "clsx";
 import type { ComponentProps, ReactNode } from "react";
@@ -80,28 +81,6 @@ export function PageHeader({ title, description, actions, crumbs, eyebrow }: { t
   );
 }
 
-function HeroArt() {
-  const atoms = Array.from({ length: 8 }, (_, i) => {
-    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
-    return { x: 160 + Math.cos(a) * 92, y: 160 + Math.sin(a) * 92 * (i % 2 ? 0.86 : 1) };
-  });
-  return (
-    <svg className="hero-art" viewBox="0 0 320 320" aria-hidden>
-      <defs>
-        <radialGradient id="atom" cx="35%" cy="30%" r="70%"><stop offset="0" stopColor="#fbe7b5" /><stop offset=".55" stopColor="#c49a52" /><stop offset="1" stopColor="#6b4e1f" /></radialGradient>
-        <radialGradient id="halo"><stop offset="0" stopColor="rgba(196,154,82,.35)" /><stop offset="1" stopColor="rgba(196,154,82,0)" /></radialGradient>
-      </defs>
-      <circle cx="160" cy="160" r="150" fill="url(#halo)" className="hero-halo" />
-      <g className="hero-orbit hero-orbit-1"><ellipse cx="160" cy="160" rx="148" ry="54" fill="none" stroke="rgba(255,255,255,.12)" /><circle cx="308" cy="160" r="3.5" fill="#f3dcab" /></g>
-      <g className="hero-orbit hero-orbit-2"><ellipse cx="160" cy="160" rx="54" ry="148" fill="none" stroke="rgba(255,255,255,.08)" /><circle cx="160" cy="12" r="2.5" fill="#9cc0e4" /></g>
-      <g className="hero-ring">
-        {atoms.map((p, i) => { const q = atoms[(i + 1) % 8]; return <line key={"b" + i} x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke="rgba(243,220,171,.55)" strokeWidth="3" strokeLinecap="round" className="hero-bond" style={{ animationDelay: `${0.4 + i * 0.08}s` }} />; })}
-        {atoms.map((p, i) => <circle key={"a" + i} cx={p.x} cy={p.y} r="15" fill="url(#atom)" className="hero-atom" style={{ animationDelay: `${0.3 + i * 0.08}s` }} />)}
-      </g>
-      <text x="160" y="170" textAnchor="middle" className="hero-formula">S₈</text>
-    </svg>
-  );
-}
 
 const tones = {
   neutral: "bg-surface-2 text-fg-2 border-line",

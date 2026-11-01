@@ -276,3 +276,64 @@ dialog[open] { animation: pop .22s cubic-bezier(.2,.9,.3,1.2) both; }
   .hero-grid, .hero-orb-c, .hero-live, .hero-art, .hero-ring, .hero-orbit, .hero-atom, .hero-bond, .hero-halo { animation: none !important; }
   .hero-bond { stroke-dashoffset: 0; }
 }
+
+/* ---------- Per-page hero scenes ---------- */
+.hero-art * { transform-box: fill-box; }
+.hero-art .ha-spin-6, .hero-art .ha-spin-10, .hero-art .ha-spin-6r, .hero-art .ha-spin-7r, .hero-art [style*="transform-origin"] { transform-box: view-box; }
+.ha-spin-40 { transform-box: view-box; transform-origin: 160px 160px; animation: spin 40s linear infinite; }
+.ha-spin-12 { transform-box: view-box; transform-origin: 160px 160px; animation: spin 12s linear infinite; }
+.ha-spin-18r { transform-box: view-box; transform-origin: 160px 160px; animation: spin 18s linear infinite reverse; }
+.ha-spin-10 { animation: spin 10s linear infinite; }
+.ha-spin-6 { animation: spin 6s linear infinite; }
+.ha-spin-6r { animation: spin 6.9s linear infinite reverse; }
+.ha-spin-7r { animation: spin 8.3s linear infinite reverse; }
+.ha-label { fill: rgba(243,220,171,.9); font-size: 30px; font-weight: 600; }
+.ha-pop { transform-origin: center; animation: atom-pop .6s cubic-bezier(.3,1.6,.5,1) both; }
+.ha-breathe { animation: atom-pop .6s cubic-bezier(.3,1.6,.5,1) both, atom-breathe 3.5s ease-in-out 1.2s infinite alternate; transform-origin: center; }
+.ha-draw { stroke-dasharray: 260; stroke-dashoffset: 260; animation: bond-draw 1s ease-out forwards; }
+.ha-draw-long { stroke-dasharray: 900; stroke-dashoffset: 900; animation: bond-draw 2.2s ease-out forwards; }
+.ha-rise { transform-origin: bottom; animation: ha-rise 1s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes ha-rise { from { transform: scaleY(0); } }
+.ha-grow { transform-origin: bottom; animation: ha-rise .9s cubic-bezier(.3,1.4,.5,1) both; }
+.ha-belt { animation: ha-dash 1s linear infinite; }
+@keyframes ha-dash { to { stroke-dashoffset: -14; } }
+.ha-fall { animation: ha-fall 2.2s cubic-bezier(.5,0,.9,.6) infinite; }
+@keyframes ha-fall { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(120px); opacity: 0; } }
+.ha-blink { animation: ha-blink 1.6s ease-in-out infinite; }
+@keyframes ha-blink { 50% { opacity: .35; } }
+.ha-wave { animation: ha-wave 4s ease-in-out infinite alternate; }
+@keyframes ha-wave { to { transform: translateX(-14px); } }
+.ha-sail { animation: ha-sail 9s ease-in-out infinite alternate; }
+@keyframes ha-sail { from { transform: translate(-40px, 0); } 50% { transform: translate(-10px, -3px); } to { transform: translate(12px, 0); } }
+.ha-road { animation: ha-dash-road .6s linear infinite; }
+@keyframes ha-dash-road { to { stroke-dashoffset: 34; } }
+.ha-drive { animation: ha-drive 1.4s cubic-bezier(.2,.8,.2,1) both, ha-bump .35s ease-in-out 1.4s infinite alternate; }
+@keyframes ha-drive { from { transform: translateX(-260px); } }
+@keyframes ha-bump { to { transform: translateY(-1.5px); } }
+.ha-wheel { transform-box: view-box; animation: spin .5s linear infinite; }
+.ha-puff { animation: ha-puff 1.2s ease-out infinite; }
+@keyframes ha-puff { from { transform: translate(0,0) scale(.5); opacity: .8; } to { transform: translate(-30px,-14px) scale(2); opacity: 0; } }
+.ha-ping { transform-origin: center; animation: ha-ping 1.6s ease-out infinite; }
+@keyframes ha-ping { 0% { box-shadow: none; transform: scale(1); } 50% { transform: scale(1.5); opacity: .6; } 100% { transform: scale(1); opacity: 1; } }
+.ha-ping-soft { transform-origin: center; animation: ha-ping-soft 3s ease-out infinite; }
+@keyframes ha-ping-soft { from { transform: scale(.85); opacity: .9; } to { transform: scale(1.15); opacity: 0; } }
+.ha-float { animation: ha-in .8s ease-out both, ha-float 4s ease-in-out 1s infinite alternate; }
+@keyframes ha-in { from { opacity: 0; transform: translateY(14px); } }
+@keyframes ha-float { to { transform: translateY(-8px); } }
+.ha-weigh { animation: ha-weigh 2.4s ease-in-out infinite; }
+@keyframes ha-weigh { 0%,100% { transform: translateY(0); } 40% { transform: translateY(3px); } }
+.ha-packet { offset-rotate: 0deg; animation: ha-packet 2.6s ease-in-out infinite; }
+@keyframes ha-packet { from { offset-distance: 0%; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { offset-distance: 100%; opacity: 0; } }
+.ha-arc { stroke-dashoffset: var(--len); animation: ha-arc 1.2s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes ha-arc { to { stroke-dashoffset: 0; } }
+.ha-bob { animation: ha-in .6s ease-out both, ha-bob 3s ease-in-out infinite alternate; }
+@keyframes ha-bob { to { transform: translateY(-12px); } }
+.ha-drop { animation: ha-drop .7s cubic-bezier(.3,1.5,.5,1) both; }
+@keyframes ha-drop { from { transform: translateY(-220px); opacity: 0; } }
+.ha-fan { transform-box: view-box; transform-origin: 170px 260px; animation: ha-fan 1s cubic-bezier(.2,.8,.2,1) both; transform: rotate(var(--r)); }
+@keyframes ha-fan { from { transform: rotate(0deg) translateY(30px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-art *, .hero-art { animation: none !important; }
+  .ha-draw, .ha-draw-long, .ha-arc { stroke-dashoffset: 0 !important; }
+}
+.hero-art [transform] { transform-box: view-box; }

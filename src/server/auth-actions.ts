@@ -79,14 +79,18 @@ export async function acceptInviteAction(_: ActionState, fd: FormData): Promise<
   if (!inv || inv.acceptedAt || inv.expiresAt < new Date()) return { error: "This invitation is invalid or has expired. Ask the owner for a new one." };
   const hash = await hashPassword(password);
   const result = await db.$transaction(async (tx) => {
+    const existing = await tx.user.findUnique({ where: { email: inv.email } });
+    if (existing) {
+      // Account recovery: the owner issued a reset link for this user.
+      await tx.invitation.update({ where: { id: inv.id }, data: { acceptedAt: new Date() } });
+      return tx.user.update({ where: { id: existing.id }, data: { passwordHash: hash, failedLogins: 0, lockedUntil: null } });
+    }
     if ((await tx.user.count({ where: { active: true } })) >= MAX_ACTIVE_USERS) return "full" as const;
-    if (await tx.user.findUnique({ where: { email: inv.email } })) return "exists" as const;
     const u = await tx.user.create({ data: { name, email: inv.email, role: inv.role, passwordHash: hash } });
     await tx.invitation.update({ where: { id: inv.id }, data: { acceptedAt: new Date() } });
     return u;
   });
   if (result === "full") return { error: `This workspace already has the maximum of ${MAX_ACTIVE_USERS} active users.` };
-  if (result === "exists") return { error: "An account with this email already exists." };
   await audit(db, { userId: result.id, action: "user.create", entity: "User", entityId: result.id, summary: `Accepted invitation as ${inv.role}` });
   await createSession(result.id, true);
   return { ok: true, redirect: "/" };

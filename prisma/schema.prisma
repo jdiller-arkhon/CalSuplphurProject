@@ -161,6 +161,71 @@ model Location {
   lots       InventoryLot[]
 }
 
+// ───────────────────────── Plant operations ─────────────────────────
+
+model Truck {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  plate     String?
+  notes     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  shipments Shipment[]
+  tickets   ScaleTicket[]
+}
+
+/// Weighbridge ticket: net = gross − tare (kg on the scale, converted to the product unit).
+model ScaleTicket {
+  id          String    @id @default(cuid())
+  number      String    @unique
+  direction   String    // IN | OUT
+  at          DateTime  @default(now())
+  productId   String
+  truckId     String?
+  truck       Truck?    @relation(fields: [truckId], references: [id])
+  vehicleRef  String?
+  driver      String?
+  grossKg     Decimal   @db.Decimal(14, 3)
+  tareKg      Decimal   @db.Decimal(14, 3)
+  netKg       Decimal   @db.Decimal(14, 3)
+  netQty      Decimal   @db.Decimal(20, 6)   // in the product's unit
+  shipmentId  String?
+  shipment    Shipment? @relation(fields: [shipmentId], references: [id])
+  reference   String?
+  notes       String?
+  createdBy   String?
+  @@index([at])
+}
+
+/// Pelletizer run: consumes molten (input lot) and produces formed product (output lot).
+model ProductionRun {
+  id              String   @id @default(cuid())
+  number          String   @unique
+  runDate         DateTime
+  inputLotId      String
+  inputQty        Decimal  @db.Decimal(20, 6)
+  outputProductId String
+  outputLocationId String
+  outputLotNumber String
+  outputQty       Decimal  @db.Decimal(20, 6)
+  processingCost  Decimal  @db.Decimal(18, 4) @default(0) // total for the run
+  outputUnitCost  Decimal  @db.Decimal(18, 4)
+  yieldPct        Decimal  @db.Decimal(9, 6)
+  notes           String?
+  createdBy       String?
+  createdAt       DateTime @default(now())
+}
+
+model VesselLoadDay {
+  id         String   @id @default(cuid())
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  day        DateTime
+  quantity   Decimal  @db.Decimal(20, 6)
+  notes      String?
+  @@unique([shipmentId, day])
+}
+
 // ───────────────────────── Inventory ledger ─────────────────────────
 
 model InventoryLot {
@@ -474,6 +539,12 @@ model Shipment {
   lines         ShipmentLine[]
   freightCosts  FreightCost[]
   documents     Document[]
+  truckId       String?
+  truck         Truck?         @relation(fields: [truckId], references: [id])
+  containerCount Int?
+  berth         String?
+  vesselDays    VesselLoadDay[]
+  scaleTickets  ScaleTicket[]
 }
 
 model ShipmentLine {

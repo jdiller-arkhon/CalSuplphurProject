@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { db } from "./db";
 import { audit } from "./audit";
 import { rateLimit } from "./ratelimit";
@@ -30,7 +31,7 @@ export async function loginAction(_: ActionState, fd: FormData): Promise<ActionS
   await db.user.update({ where: { id: user.id }, data: { failedLogins: 0, lockedUntil: null, lastLoginAt: new Date() } });
   await createSession(user.id, !user.mfaSecret);
   await audit(db, { userId: user.id, action: "auth.login", entity: "User", entityId: user.id, summary: "Signed in" });
-  return { ok: true, redirect: user.mfaSecret ? "/login/mfa" : "/" };
+  redirect(user.mfaSecret ? "/login/mfa" : "/");
 }
 
 export async function mfaAction(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -40,7 +41,7 @@ export async function mfaAction(_: ActionState, fd: FormData): Promise<ActionSta
   const code = String(fd.get("code") ?? "").replace(/\s/g, "");
   if (!totp.check(code, s.user.mfaSecret!)) return { error: "That code is not valid. Check your authenticator app's clock and try again." };
   await markMfaPassed();
-  return { ok: true, redirect: "/" };
+  redirect("/");
 }
 
 export async function logout() {
@@ -65,7 +66,7 @@ export async function setupOwnerAction(_: ActionState, fd: FormData): Promise<Ac
   if (!created) return { error: "Setup has already been completed. Sign in instead." };
   await audit(db, { userId: created.id, action: "user.create", entity: "User", entityId: created.id, summary: "Owner account created during first-run setup" });
   await createSession(created.id, true);
-  return { ok: true, redirect: "/setup" };
+  redirect("/setup");
 }
 
 export async function acceptInviteAction(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -93,7 +94,7 @@ export async function acceptInviteAction(_: ActionState, fd: FormData): Promise<
   if (result === "full") return { error: `This workspace already has the maximum of ${MAX_ACTIVE_USERS} active users.` };
   await audit(db, { userId: result.id, action: "user.create", entity: "User", entityId: result.id, summary: `Accepted invitation as ${inv.role}` });
   await createSession(result.id, true);
-  return { ok: true, redirect: "/" };
+  redirect("/");
 }
 
 export async function changePasswordAction(_: ActionState, fd: FormData): Promise<ActionState> {

@@ -4,29 +4,30 @@ import { z } from "zod";
 import { db } from "../db";
 import { audit } from "../audit";
 import { action, zReq, zOpt, zDec, zDateOpt, UserError } from "../action";
+import type { ActionState } from "../action";
 import * as po from "../services/purchasing";
 import * as sales from "../services/sales";
 import { dec, money } from "@/lib/decimal";
 
 const poLine = z.object({ productId: zReq("Product"), quantity: zDec("Quantity", { min: 0, allowZero: false }), unitCost: zDec("Unit cost", { min: 0 }) });
 
-export const createPOAction = action("purchasing.manage", z.object({ supplierId: zReq("Supplier"), expectedAt: zDateOpt, notes: zOpt(2000), lines: z.array(poLine).min(1) }), async (d, u) => {
+const createPOActionImpl = action("purchasing.manage", z.object({ supplierId: zReq("Supplier"), expectedAt: zDateOpt, notes: zOpt(2000), lines: z.array(poLine).min(1) }), async (d, u) => {
   const p = await po.createPO({ userId: u.id }, d);
   return { message: `${p.number} created as draft.`, redirect: `/purchasing/${p.id}` };
 });
-export const issuePOAction = action("purchasing.manage", z.object({ id: zReq("id") }), async (d, u) => {
+const issuePOActionImpl = action("purchasing.manage", z.object({ id: zReq("id") }), async (d, u) => {
   await po.issuePO({ userId: u.id }, d.id);
   return "Purchase order issued. CSC Command does not send it — share the document with the supplier yourself.";
 });
-export const amendPOAction = action("purchasing.manage", z.object({ poLineId: zReq("Line"), quantity: zDec("Quantity", { min: 0 }), unitCost: zDec("Unit cost", { min: 0 }), reason: zReq("Reason", 300) }), async (d, u) => {
+const amendPOActionImpl = action("purchasing.manage", z.object({ poLineId: zReq("Line"), quantity: zDec("Quantity", { min: 0 }), unitCost: zDec("Unit cost", { min: 0 }), reason: zReq("Reason", 300) }), async (d, u) => {
   await po.amendPOLine({ userId: u.id }, d);
   return "Line amended; revision recorded.";
 });
-export const cancelPOAction = action("purchasing.manage", z.object({ id: zReq("id"), reason: zReq("Reason", 300) }), async (d, u) => {
+const cancelPOActionImpl = action("purchasing.manage", z.object({ id: zReq("id"), reason: zReq("Reason", 300) }), async (d, u) => {
   await po.cancelPO({ userId: u.id }, d.id, d.reason);
   return "Purchase order closed.";
 });
-export const receivePOAction = action(
+const receivePOActionImpl = action(
   "purchasing.manage",
   z.object({
     poId: zReq("PO"),
@@ -46,7 +47,7 @@ export const receivePOAction = action(
   },
 );
 
-export const createShipmentAction = action(
+const createShipmentActionImpl = action(
   "logistics.manage",
   z.object({
     orderId: zOpt(40),
@@ -69,27 +70,62 @@ export const createShipmentAction = action(
   },
 );
 const sid = z.object({ id: zReq("id") });
-export const dispatchShipmentAction = action("logistics.manage", sid, async (d, u) => {
+const dispatchShipmentActionImpl = action("logistics.manage", sid, async (d, u) => {
   await sales.postShipment({ userId: u.id }, d.id);
   return "Shipment dispatched — inventory deducted and revenue recognized.";
 });
-export const deliverShipmentAction = action("logistics.manage", z.object({ id: zReq("id"), deliveredAt: zDateOpt }), async (d, u) => {
+const deliverShipmentActionImpl = action("logistics.manage", z.object({ id: zReq("id"), deliveredAt: zDateOpt }), async (d, u) => {
   await sales.deliverShipment({ userId: u.id }, d.id, d.deliveredAt);
   return "Delivery confirmed.";
 });
-export const cancelShipmentAction = action("logistics.manage", sid, async (d, u) => {
+const cancelShipmentActionImpl = action("logistics.manage", sid, async (d, u) => {
   await sales.cancelShipment({ userId: u.id }, d.id);
   return "Shipment cancelled.";
 });
-export const addFreightAction = action("logistics.manage", z.object({ shipmentId: zReq("Shipment"), category: zReq("Category"), amount: zDec("Amount", { min: 0, allowZero: false }), notes: zOpt(200) }), async (d, u) => {
+const addFreightActionImpl = action("logistics.manage", z.object({ shipmentId: zReq("Shipment"), category: zReq("Category"), amount: zDec("Amount", { min: 0, allowZero: false }), notes: zOpt(200) }), async (d, u) => {
   const s = await db.shipment.findUniqueOrThrow({ where: { id: d.shipmentId } });
   if (s.status === "CANCELLED") throw new UserError("Shipment is cancelled.");
   await db.freightCost.create({ data: { shipmentId: d.shipmentId, category: d.category, amount: money(d.amount).toString(), notes: d.notes } });
   await audit(db, { userId: u.id, action: "shipment.freight", entity: "Shipment", entityId: s.id, summary: `Added ${d.category.toLowerCase()} $${d.amount} to ${s.number}` });
   return "Freight cost recorded.";
 });
-export const updateShipmentAction = action("logistics.manage", z.object({ id: zReq("id"), carrier: zOpt(120), vehicleRef: zOpt(120), scheduledAt: zDateOpt, destination: zOpt(200), notes: zOpt(2000) }), async (d, u) => {
+const updateShipmentActionImpl = action("logistics.manage", z.object({ id: zReq("id"), carrier: zOpt(120), vehicleRef: zOpt(120), scheduledAt: zDateOpt, destination: zOpt(200), notes: zOpt(2000) }), async (d, u) => {
   const s = await db.shipment.update({ where: { id: d.id }, data: { carrier: d.carrier ?? null, vehicleRef: d.vehicleRef ?? null, scheduledAt: d.scheduledAt ?? null, destination: d.destination ?? null, notes: d.notes ?? null } });
   await audit(db, { userId: u.id, action: "shipment.update", entity: "Shipment", entityId: s.id, summary: `Updated ${s.number} details` });
   return "Shipment updated.";
 });
+
+// Server Action exports must be async functions (Next.js requirement for "use server" files).
+export async function createPOAction(prev: ActionState, fd: FormData) {
+  return createPOActionImpl(prev, fd);
+}
+export async function issuePOAction(prev: ActionState, fd: FormData) {
+  return issuePOActionImpl(prev, fd);
+}
+export async function amendPOAction(prev: ActionState, fd: FormData) {
+  return amendPOActionImpl(prev, fd);
+}
+export async function cancelPOAction(prev: ActionState, fd: FormData) {
+  return cancelPOActionImpl(prev, fd);
+}
+export async function receivePOAction(prev: ActionState, fd: FormData) {
+  return receivePOActionImpl(prev, fd);
+}
+export async function createShipmentAction(prev: ActionState, fd: FormData) {
+  return createShipmentActionImpl(prev, fd);
+}
+export async function dispatchShipmentAction(prev: ActionState, fd: FormData) {
+  return dispatchShipmentActionImpl(prev, fd);
+}
+export async function deliverShipmentAction(prev: ActionState, fd: FormData) {
+  return deliverShipmentActionImpl(prev, fd);
+}
+export async function cancelShipmentAction(prev: ActionState, fd: FormData) {
+  return cancelShipmentActionImpl(prev, fd);
+}
+export async function addFreightAction(prev: ActionState, fd: FormData) {
+  return addFreightActionImpl(prev, fd);
+}
+export async function updateShipmentAction(prev: ActionState, fd: FormData) {
+  return updateShipmentActionImpl(prev, fd);
+}

@@ -5,7 +5,7 @@ import { ActionForm, Modal, Submit, FieldError, type ActionFn } from "./forms";
 import { Button, Field, Input, Select, Textarea, buttonClass, cx } from "./ui";
 
 export type FieldDef =
-  | { name: string; label: string; type?: "text" | "number" | "date" | "email" | "tel"; required?: boolean; placeholder?: string; hint?: string; defaultValue?: string; step?: string; span?: 2 }
+  | { name: string; label: string; type?: "text" | "number" | "date" | "email" | "tel" | "password"; required?: boolean; placeholder?: string; hint?: string; defaultValue?: string; step?: string; span?: 2 }
   | { name: string; label: string; type: "select"; options: { value: string; label: string }[]; required?: boolean; hint?: string; defaultValue?: string; span?: 2; placeholder?: string }
   | { name: string; label: string; type: "textarea"; required?: boolean; hint?: string; defaultValue?: string; span?: 2; placeholder?: string }
   | { name: string; label: string; type: "checkbox"; hint?: string; defaultValue?: string; span?: 2 };

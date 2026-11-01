@@ -45,7 +45,7 @@ describe("excel exports", () => {
     it(`builds a valid ${r} workbook`, async () => {
       const buf = await buildWorkbook(r, user, period);
       const wb = new ExcelJS.Workbook();
-      await wb.xlsx.load(buf);
+      await wb.xlsx.load(buf as never);
       expect(wb.worksheets.length).toBeGreaterThan(0);
       const ws = wb.worksheets[0];
       expect(ws.views[0]).toMatchObject({ state: "frozen", ySplit: 5 });
@@ -67,7 +67,7 @@ describe("excel exports", () => {
   }
   it("sales workbook reconciles and escapes customer text", async () => {
     const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(await buildWorkbook("sales", user, period));
+    await wb.xlsx.load((await buildWorkbook("sales", user, period)) as never);
     const lines = wb.getWorksheet("Sales lines")!;
     expect(lines.getCell("D6").value).toBe("'=HYPERLINK(\"http://x\")");
     expect((lines.getCell("H6").value as { formula: string; result: number }).result).toBe(12000);
@@ -77,7 +77,7 @@ describe("excel exports", () => {
   });
   it("financial summary gross profit formula matches the engine", async () => {
     const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(await buildWorkbook("financial", user, period));
+    await wb.xlsx.load((await buildWorkbook("financial", user, period)) as never);
     const s = wb.getWorksheet("Summary")!;
     expect(s.getCell("B6").value).toBe(12000);
     expect((s.getCell("B9").value as { formula: string; result: number })).toMatchObject({ formula: "B6-B7-B8", result: 3500 });

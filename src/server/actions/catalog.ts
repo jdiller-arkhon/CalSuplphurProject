@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { audit } from "../audit";
 import { action, zReq, zOpt, zDecOpt, zPct, zBool, UserError, zDec } from "../action";
+import type { ActionState } from "../action";
 import * as inv from "../services/inventory";
 
 const productSchema = z.object({
@@ -22,7 +23,7 @@ const productSchema = z.object({
   specifications: zOpt(4000),
 });
 
-export const saveProduct = action("products.manage", productSchema, async (d, u) => {
+const saveProductImpl = action("products.manage", productSchema, async (d, u) => {
   if (d.minMarginPct && Number(d.minMarginPct) >= 1) throw new UserError("Minimum margin must be below 100%.");
   const category = d.categoryName ? await db.productCategory.upsert({ where: { name: d.categoryName }, update: {}, create: { name: d.categoryName } }) : null;
   let specs: unknown = undefined;
@@ -56,13 +57,13 @@ export const saveProduct = action("products.manage", productSchema, async (d, u)
   return { message: "Product created.", redirect: `/products/${p.id}` };
 });
 
-export const setProductActive = action("products.manage", z.object({ id: zReq("id"), active: zBool }), async (d, u) => {
+const setProductActiveImpl = action("products.manage", z.object({ id: zReq("id"), active: zBool }), async (d, u) => {
   const p = await db.product.update({ where: { id: d.id }, data: { active: d.active } });
   await audit(db, { userId: u.id, action: d.active ? "product.restore" : "product.archive", entity: "Product", entityId: p.id, summary: `${d.active ? "Restored" : "Archived"} product ${p.sku}` });
   return d.active ? "Product restored." : "Product archived. History is preserved.";
 });
 
-export const saveLocation = action(
+const saveLocationImpl = action(
   "products.manage",
   z.object({ id: zOpt(40), code: zReq("Code", 20), name: zReq("Name", 120), kind: zReq("Type"), capacity: zDecOpt("Capacity"), address: zOpt(300) }),
   async (d, u) => {
@@ -75,7 +76,7 @@ export const saveLocation = action(
 
 const key = z.string().optional();
 
-export const receiveAction = action(
+const receiveActionImpl = action(
   "inventory.operate",
   z.object({ productId: zReq("Product"), locationId: zReq("Location"), lotNumber: zReq("Lot number", 60), quantity: zDec("Quantity", { min: 0, allowZero: false }), unitCost: zDec("Unit cost", { min: 0 }), reference: zOpt(120), receivedAt: zOpt(30), idempotencyKey: key }),
   async (d, u) => {
@@ -84,32 +85,64 @@ export const receiveAction = action(
   },
 );
 
-export const adjustAction = action("inventory.operate", z.object({ lotId: zReq("Lot"), delta: zDec("Adjustment", { allowZero: false }), reason: zReq("Reason", 300), idempotencyKey: key }), async (d, u) => {
+const adjustActionImpl = action("inventory.operate", z.object({ lotId: zReq("Lot"), delta: zDec("Adjustment", { allowZero: false }), reason: zReq("Reason", 300), idempotencyKey: key }), async (d, u) => {
   await inv.adjust({ userId: u.id }, { ...d, idempotencyKey: d.idempotencyKey ? `adj:${d.idempotencyKey}` : undefined });
   return "Adjustment posted.";
 });
 
-export const transferAction = action("inventory.operate", z.object({ lotId: zReq("Lot"), toLocationId: zReq("Destination"), quantity: zDec("Quantity", { min: 0, allowZero: false }), reference: zOpt(120), idempotencyKey: key }), async (d, u) => {
+const transferActionImpl = action("inventory.operate", z.object({ lotId: zReq("Lot"), toLocationId: zReq("Destination"), quantity: zDec("Quantity", { min: 0, allowZero: false }), reference: zOpt(120), idempotencyKey: key }), async (d, u) => {
   await inv.transfer({ userId: u.id }, { ...d, idempotencyKey: d.idempotencyKey ? `xfer:${d.idempotencyKey}` : undefined });
   return "Transfer posted.";
 });
 
-export const reserveAction = action("inventory.operate", z.object({ lotId: zReq("Lot"), quantity: zDec("Quantity", { min: 0, allowZero: false }), note: zOpt(200) }), async (d, u) => {
+const reserveActionImpl = action("inventory.operate", z.object({ lotId: zReq("Lot"), quantity: zDec("Quantity", { min: 0, allowZero: false }), note: zOpt(200) }), async (d, u) => {
   await inv.reserve({ userId: u.id }, d);
   return "Quantity reserved.";
 });
 
-export const releaseAction = action("inventory.operate", z.object({ id: zReq("Reservation") }), async (d, u) => {
+const releaseActionImpl = action("inventory.operate", z.object({ id: zReq("Reservation") }), async (d, u) => {
   await inv.release({ userId: u.id }, d.id);
   return "Reservation released.";
 });
 
-export const shipOutAction = action("inventory.operate", z.object({ lotId: zReq("Lot"), quantity: zDec("Quantity", { min: 0, allowZero: false }), reference: zReq("Reference", 120), idempotencyKey: key }), async (d, u) => {
+const shipOutActionImpl = action("inventory.operate", z.object({ lotId: zReq("Lot"), quantity: zDec("Quantity", { min: 0, allowZero: false }), reference: zReq("Reference", 120), idempotencyKey: key }), async (d, u) => {
   await inv.shipOut({ userId: u.id }, { ...d, idempotencyKey: d.idempotencyKey ? `out:${d.idempotencyKey}` : undefined });
   return "Outbound quantity recorded.";
 });
 
-export const reverseAction = action("inventory.reverse", z.object({ movementId: zReq("Movement"), reason: zReq("Reason", 300) }), async (d, u) => {
+const reverseActionImpl = action("inventory.reverse", z.object({ movementId: zReq("Movement"), reason: zReq("Reason", 300) }), async (d, u) => {
   await inv.reverse({ userId: u.id }, d.movementId, d.reason);
   return "Movement reversed. The original and the reversal both remain in the ledger.";
 });
+
+// Server Action exports must be async functions (Next.js requirement for "use server" files).
+export async function saveProduct(prev: ActionState, fd: FormData) {
+  return saveProductImpl(prev, fd);
+}
+export async function setProductActive(prev: ActionState, fd: FormData) {
+  return setProductActiveImpl(prev, fd);
+}
+export async function saveLocation(prev: ActionState, fd: FormData) {
+  return saveLocationImpl(prev, fd);
+}
+export async function receiveAction(prev: ActionState, fd: FormData) {
+  return receiveActionImpl(prev, fd);
+}
+export async function adjustAction(prev: ActionState, fd: FormData) {
+  return adjustActionImpl(prev, fd);
+}
+export async function transferAction(prev: ActionState, fd: FormData) {
+  return transferActionImpl(prev, fd);
+}
+export async function reserveAction(prev: ActionState, fd: FormData) {
+  return reserveActionImpl(prev, fd);
+}
+export async function releaseAction(prev: ActionState, fd: FormData) {
+  return releaseActionImpl(prev, fd);
+}
+export async function shipOutAction(prev: ActionState, fd: FormData) {
+  return shipOutActionImpl(prev, fd);
+}
+export async function reverseAction(prev: ActionState, fd: FormData) {
+  return reverseActionImpl(prev, fd);
+}

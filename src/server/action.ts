@@ -37,7 +37,7 @@ export function formToObject(fd: FormData): Record<string, unknown> {
 }
 
 /** Errors whose messages are safe to show to the user. */
-const USER_ERRORS = ["InventoryError", "SalesError", "PurchasingError", "PricingError", "UnitError", "UserError", "ImportError", "PlantError"];
+const USER_ERRORS = ["InventoryError", "SalesError", "PurchasingError", "PricingError", "UnitError", "UserError", "ImportError", "PlantError", "TrackingError"];
 export class UserError extends Error {
   name = "UserError";
 }

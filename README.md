@@ -9,6 +9,9 @@ Private operations and intelligence platform for California Sulphur Company: inv
 - **Plant operations** — weighbridge scale tickets (gross − tare → net tons, optional posting to stock), pelletizer production runs (yield and output cost), truck fleet.
 - **Pricing Studio** — landed cost (per ton / shipment / order / % of price) → price by gross margin, markup or target profit; sensitivity matrix; saved scenarios → quotes.
 - **Sales** — quote → approval (below-margin quotes need the owner) → order → FIFO allocation → partial shipments → completion; estimated vs actual profit.
+- **Market rates** — record prices you hear (indexes, competitor quotes, customer feedback, lost deals) in any unit; get a low / typical / high price to charge per product, weighted to recent prices, with trend, confidence, your cost floor and your own recent sales. Pricing Studio checks every price against it and can match the market in one click.
+- **Tracking** — define your own measures (tons loaded, moisture %, diesel, turnaround hours, near-misses…) in any unit, with daily/weekly/monthly totals, averages or latest readings, targets, charts and CSV export. Values can be logged in any unit of the same kind and are converted exactly.
+- **Units** — weight, volume, length, energy, time, count and percent built in; add your own (e.g. a 25 kg bag, a tote, or a brand-new kind like pallets).
 - **Customers, suppliers, purchasing** — contacts, agreed prices, purchase orders with partial receipts posted into inventory.
 - **Logistics** — truck, container and vessel shipments; freight per ton; daily vessel loading; equipment.
 - **Analytics** — products, customers, orders, inventory and operations with period comparison and drill-down.
@@ -34,7 +37,7 @@ Optional, development database only: `APP_ENV=development npm run db:dev-sample`
 
 ```bash
 createdb csc_test && DATABASE_URL=postgresql://…/csc_test npx prisma migrate deploy
-npm test                         # 66 unit + integration tests (pricing, ledger, workflows, plant, exports, import)
+npm test                         # 75 unit + integration tests (pricing, ledger, workflows, plant, exports, import, tracking, market rates)
 npm run build && npm start -p 3001
 BASE_URL=http://localhost:3001 OWNER_EMAIL=… OWNER_PASSWORD=… node e2e/smoke.mjs        # 67 end-to-end checks
 BASE_URL=http://localhost:3001 OWNER_EMAIL=… OWNER_PASSWORD=… node e2e/permissions.mjs  # 18 access-control checks

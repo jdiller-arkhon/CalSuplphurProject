@@ -8,6 +8,7 @@ import { calculatePrice, sensitivityMatrix, PricingError, type CostBasis, type P
 import { D, dec, fmtMoney, fmtPct, fmtQty } from "@/lib/decimal";
 import { Button, Card, Field, Input, Select, cx, inputClass } from "@/components/ui";
 import { saveScenario } from "@/server/actions/pricing";
+import { MarketCheck } from "./market-check";
 
 export type StudioProduct = { id: string; name: string; unit: string; currentCost: string | null; defaultCost: string | null; minMarginPct: string | null };
 type Row = { id: string; category: string; label: string; basis: CostBasis; amount: string };
@@ -118,7 +119,8 @@ export function PricingStudio({ products, customers, initial, defaultMinMargin, 
   const methodMeta = METHODS.find((m) => m.k === method)!;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+    <div className="space-y-6">
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
       <div className="space-y-6">
         <Card title="Order & target">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -225,6 +227,14 @@ export function PricingStudio({ products, customers, initial, defaultMinMargin, 
             </div>
           )}
         </section>
+        <MarketCheck productId={productId} price={r ? r.netPrice.toString() : null} landed={r ? r.landedUnitCost.toString() : null} onUse={(p) => {
+          if (!r) return;
+          // Hit the chosen price exactly: switch to target profit per unit and clear any discount.
+          setMethod("TARGET_PROFIT"); setDiscount("0");
+          setTarget(dec(p).minus(dec(r.landedUnitCost)).toDecimalPlaces(4).toString());
+          toast.success(`Priced at ${fmtMoney(p)} per ${unit}`, { description: "Switched to target profit per unit so the price matches exactly." });
+        }} />
+      </div>
       </div>
 
       {matrix && r && (

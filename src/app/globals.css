@@ -382,3 +382,10 @@ main .card.is-tilt::after { content: ""; position: absolute; inset: -1px; border
   .hero-sparks { display: none; }
   .hero-art-wrap, main .card.is-tilt { transform: none !important; }
 }
+
+/* Market range markers */
+.range-band { animation: band-in .9s cubic-bezier(.2,.8,.2,1) both; transform-origin: center; }
+@keyframes band-in { from { transform: scaleX(0); opacity: 0; } }
+.range-mark { animation: mark-in .6s cubic-bezier(.3,1.5,.5,1) both; }
+@keyframes mark-in { from { opacity: 0; transform: translate(-50%, -14px); } }
+@media (prefers-reduced-motion: reduce) { .range-band, .range-mark { animation: none !important; } }

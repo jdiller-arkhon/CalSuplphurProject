@@ -105,10 +105,16 @@ model IdempotencyKey {
 model UnitOfMeasure {
   code        String  @id          // MT, KG, LB, ST, LT
   name        String
-  // Exact factor to convert 1 of this unit into kilograms (dimension: mass).
+  // Exact factor to convert 1 of this unit into its dimension's base unit
+  // (kg for mass, L for volume, m for length, kWh for energy, h for time, ea for count…).
+  // The column keeps its historical name; for mass units it is the factor to kilograms.
   toKg        Decimal @db.Decimal(24, 12)
   dimension   String  @default("mass")
+  custom      Boolean @default(false)   // defined by the company rather than shipped with the app
   products    Product[]
+  trackers    Tracker[]
+  trackerEntries TrackerEntry[]
+  marketRates MarketRate[]
 }
 
 model ProductCategory {
@@ -145,6 +151,8 @@ model Product {
   poLines            PurchaseOrderLine[]
   scenarios          PricingScenario[]
   documents          Document[]
+  trackers           Tracker[]
+  marketRates        MarketRate[]
   @@index([name])
 }
 
@@ -159,6 +167,7 @@ model Location {
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
   lots       InventoryLot[]
+  trackers   Tracker[]
 }
 
 // ───────────────────────── Plant operations ─────────────────────────
@@ -698,4 +707,96 @@ model Notification {
 model Counter {
   name  String @id
   value Int
+}
+
+
+// ───────────────────────── Custom tracking ─────────────────────────
+
+enum TrackerAggregation {
+  SUM      // e.g. tons loaded, kWh used — period totals add up
+  AVERAGE  // e.g. moisture %, purity — period values average
+  LATEST   // e.g. tank level, headcount — the last reading wins
+}
+
+enum TrackerFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  AS_NEEDED
+}
+
+enum TargetDirection {
+  AT_LEAST
+  AT_MOST
+}
+
+model Tracker {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  category    String?
+  unitCode    String
+  unit        UnitOfMeasure @relation(fields: [unitCode], references: [code])
+  aggregation TrackerAggregation @default(SUM)
+  frequency   TrackerFrequency   @default(DAILY)
+  target      Decimal?  @db.Decimal(24, 6)
+  targetDirection TargetDirection?
+  decimals    Int       @default(2)
+  productId   String?
+  product     Product?  @relation(fields: [productId], references: [id])
+  locationId  String?
+  location    Location? @relation(fields: [locationId], references: [id])
+  archived    Boolean   @default(false)
+  createdBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  entries     TrackerEntry[]
+  @@index([archived])
+}
+
+model TrackerEntry {
+  id          String   @id @default(cuid())
+  trackerId   String
+  tracker     Tracker  @relation(fields: [trackerId], references: [id], onDelete: Cascade)
+  at          DateTime @db.Date
+  value       Decimal  @db.Decimal(24, 6)   // in the tracker's unit
+  enteredValue Decimal @db.Decimal(24, 6)   // exactly as typed
+  enteredUnit String
+  unit        UnitOfMeasure @relation(fields: [enteredUnit], references: [code])
+  note        String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  @@index([trackerId, at])
+}
+
+// ───────────────────────── Market rates ─────────────────────────
+
+enum MarketSourceType {
+  PUBLISHED_INDEX     // e.g. a trade-press assessment the company subscribes to
+  COMPETITOR_QUOTE
+  CUSTOMER_FEEDBACK   // "your price is $X above what I can get"
+  BROKER
+  LOST_DEAL           // price that won the business against us
+  OTHER
+}
+
+model MarketRate {
+  id          String   @id @default(cuid())
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  grade       String?  // free text when no product matches (e.g. "Granular 99.5%")
+  sourceType  MarketSourceType
+  source      String   // who or what reported it
+  basis       String   @default("FOB")  // FOB, CFR, CIF, DELIVERED, EXW…
+  region      String?
+  price       Decimal  @db.Decimal(18, 4)
+  currency    String   @default("USD")
+  unitCode    String
+  unit        UnitOfMeasure @relation(fields: [unitCode], references: [code])
+  observedAt  DateTime @db.Date
+  validUntil  DateTime? @db.Date
+  note        String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  @@index([productId, observedAt])
 }

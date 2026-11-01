@@ -18,7 +18,8 @@ export async function lookups() {
     categories,
     productOpts: products.map((p) => ({ value: p.id, label: `${p.name} (${p.sku})` })),
     locationOpts: locations.map((l) => ({ value: l.id, label: `${l.code} — ${l.name}` })),
-    unitOpts: units.map((u) => ({ value: u.code, label: `${u.code} — ${u.name}` })),
+    unitOpts: units.filter((u) => u.dimension === "mass").map((u) => ({ value: u.code, label: `${u.code} — ${u.name}` })),
+    allUnitOpts: units.map((u) => ({ value: u.code, label: `${u.name} (${u.code})` })),
     customerOpts: customers.map((c) => ({ value: c.id, label: c.name })),
     supplierOpts: suppliers.map((s) => ({ value: s.id, label: s.name })),
   };

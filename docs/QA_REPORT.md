@@ -11,7 +11,8 @@ All results below were produced by running the suites in this repository against
 | `tests/plant.test.ts` | Scale ticket net weight & kg→MT; tare validation; posting in/out; production run consumption, output cost and yield; over-consumption refused; idempotency; vessel day upsert | **7 / 7 pass** |
 | `tests/reports.test.ts` | All 8 Excel workbooks (frozen header, formulas reference valid cells, totals reconcile to the engine, formula-injection escaping); all 6 PowerPoint templates (native charts, real figures); quote PDF validity and single page | **19 / 19 pass** |
 | `tests/import.test.ts` | Header auto-matching; CSV quoting and currency cleanup; duplicate and invalid-row detection; refusal unless skipping is chosen; skipped rows recorded; beginning inventory via ledger | **5 / 5 pass** |
-| **Total unit + integration** | | **66 / 66 pass** |
+| `tests/tracking-market.test.ts` | Unit conversion across kinds (and refusal across kinds), price-rate conversion, tracker storage in tracker unit with original kept, sum/average/latest aggregation, target status, market guide unit conversion, non-USD exclusion, recency weighting, window and basis filters, min-margin floor | **9 / 9 pass** |
+| **Total unit + integration** | | **75 / 75 pass** |
 | `e2e/smoke.mjs` | Anonymous access blocked; every sidebar page and 26 more routes load without errors; 7 detail pages; search; all Excel/PowerPoint/PDF/template downloads; scale ticket through the real form; no browser errors | **67 / 67 pass** |
 | `e2e/permissions.mjs` | Invite → accept as Viewer; link single-use; 7 restricted pages redirect; valuation hidden; sidebar filtered; export APIs return 403; search filtered; deactivation ends the session | **18 / 18 pass** |
 
@@ -39,6 +40,7 @@ All results below were produced by running the suites in this repository against
 | Tablet "yard mode" | Built (`/yard`): large buttons for scale tickets, receiving and transfers. Other pages work on tablets but weren't screenshot-tested at tablet width |
 | Customizable dashboard layout | Not built; KPIs are fixed |
 | Inventory costing / revenue recognition | Implemented as lot weighted average and recognition on dispatch — **pending company confirmation** |
-| Exchange rates | Not supported (multi-currency customers are stored, never converted) |
+| Exchange rates | Not supported (multi-currency customers are stored, never converted; non-USD market prices are stored but left out of the market guide) |
+| Market data feeds | None connected. Market rates come only from prices staff record; connecting a paid index (e.g. a trade-press subscription) needs approval |
 | Deployment | Not performed — requires approval of hosting cost (see DEPLOYMENT.md) |
 | Real company data | None loaded. Screenshots use development records labeled “[Sample]” |

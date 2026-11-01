@@ -3,7 +3,7 @@ import type { Permission } from "@/server/permissions";
 export type NavItem = { href: string; label: string; icon: string; perm?: Permission };
 export type NavGroup = { label: string; items: NavItem[] };
 
-// Thirteen destinations grouped by workflow so the sidebar reads as four short lists.
+// Fifteen destinations grouped by workflow so the sidebar reads as four short lists.
 export const NAV: NavGroup[] = [
   { label: "", items: [{ href: "/", label: "Overview", icon: "LayoutDashboard" }] },
   {
@@ -13,12 +13,14 @@ export const NAV: NavGroup[] = [
       { href: "/products", label: "Products", icon: "Package", perm: "inventory.view" },
       { href: "/operations", label: "Plant operations", icon: "Factory", perm: "inventory.view" },
       { href: "/logistics", label: "Logistics", icon: "Truck", perm: "logistics.manage" },
+      { href: "/tracking", label: "Tracking", icon: "Gauge", perm: "tracking.use" },
     ],
   },
   {
     label: "Commercial",
     items: [
       { href: "/pricing", label: "Pricing Studio", icon: "Calculator", perm: "pricing.use" },
+      { href: "/market", label: "Market rates", icon: "LineChart", perm: "pricing.use" },
       { href: "/sales", label: "Sales & Quotes", icon: "FileSignature", perm: "quotes.manage" },
       { href: "/customers", label: "Customers", icon: "Building2", perm: "customers.view" },
       { href: "/suppliers", label: "Suppliers", icon: "Handshake", perm: "suppliers.manage" },
@@ -28,7 +30,7 @@ export const NAV: NavGroup[] = [
   {
     label: "Intelligence",
     items: [
-      { href: "/analytics", label: "Analytics", icon: "LineChart", perm: "finance.view" },
+      { href: "/analytics", label: "Analytics", icon: "ChartColumn", perm: "finance.view" },
       { href: "/reports", label: "Reports", icon: "Presentation", perm: "reports.generate" },
       { href: "/documents", label: "Documents", icon: "FolderLock", perm: "documents.view" },
     ],

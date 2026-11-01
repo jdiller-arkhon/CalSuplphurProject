@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, ReferenceLine, ReferenceArea, ScatterChart, Scatter, ZAxis, Legend, ComposedChart, Line } from "recharts";
 
 const C = { accent: "var(--accent)", gold: "var(--gold)", pos: "var(--pos)", grid: "var(--border)", text: "var(--text-3)" };
 const compact = (v: number) => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v);
@@ -95,3 +95,61 @@ export function Spark({ data, height = 40 }: { data: number[]; height?: number }
     </div>
   );
 }
+
+
+const num = (v: number, d = 2) => new Intl.NumberFormat("en-US", { maximumFractionDigits: d }).format(v);
+
+/** Period values for a tracker, with an optional target line. */
+export function TrackerChart({ data, unit, target, kind = "bar", decimals = 2, height = 260 }: { data: { label: string; value: number | null }[]; unit: string; target?: number | null; kind?: "bar" | "line"; decimals?: number; height?: number }) {
+  const tip = ({ active, payload, label }: { active?: boolean; payload?: readonly { value?: unknown }[]; label?: unknown }) =>
+    active && payload?.length && payload[0].value != null ? <div className="card px-3 py-2 text-xs shadow-[var(--shadow-lg)]"><div className="font-medium text-fg">{String(label)}</div><div className="num text-fg-2">{num(Number(payload[0].value), decimals)} {unit}</div></div> : null;
+  return (
+    <div style={{ height }} role="img" aria-label={`Tracked values in ${unit}`}>
+      <ResponsiveContainer>
+        <ComposedChart data={data} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+          <defs><linearGradient id="trk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={C.accent} stopOpacity={0.9} /><stop offset="1" stopColor={C.accent} stopOpacity={0.45} /></linearGradient></defs>
+          <CartesianGrid vertical={false} stroke={C.grid} strokeDasharray="3 3" />
+          <XAxis dataKey="label" tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} width={56} tickFormatter={(v) => compact(v)} />
+          <Tooltip content={tip} cursor={{ fill: "var(--accent-soft)", opacity: 0.4 }} />
+          {kind === "bar" ? <Bar dataKey="value" fill="url(#trk)" radius={[5, 5, 0, 0]} maxBarSize={44} animationDuration={900} /> : <Line type="monotone" dataKey="value" stroke={C.accent} strokeWidth={2.5} dot={{ r: 3, fill: C.accent }} connectNulls animationDuration={900} />}
+          {target != null && <ReferenceLine y={target} stroke={C.gold} strokeDasharray="5 4" strokeWidth={1.5} label={{ value: `Target ${num(target, decimals)}`, position: "insideTopRight", fill: C.gold, fontSize: 11 }} />}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Market observations over time vs own sales and supplier costs, with the suggested range shaded. */
+export function MarketChart({ points, band, floor, unit, height = 300 }: { points: { t: number; price: number; kind: "market" | "sale" | "purchase"; source: string }[]; band?: { low: number; mid: number; high: number } | null; floor?: number | null; unit: string; height?: number }) {
+  const series = [
+    { k: "market", name: "Market prices", color: C.gold },
+    { k: "sale", name: "Our sales", color: C.accent },
+    { k: "purchase", name: "Our purchase costs", color: "var(--text-3)" },
+  ] as const;
+  const date = (t: number) => new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const tip = ({ active, payload }: { active?: boolean; payload?: readonly { payload?: unknown }[] }) => {
+    if (!active || !payload?.length) return null;
+    const p = payload[0].payload as { t: number; price: number; source: string; kind: string };
+    return <div className="card px-3 py-2 text-xs shadow-[var(--shadow-lg)]"><div className="font-medium text-fg">{usd2(p.price)} / {unit}</div><div className="text-fg-2">{p.source}</div><div className="text-fg-3">{date(p.t)} · {series.find((s) => s.k === p.kind)?.name}</div></div>;
+  };
+  return (
+    <div style={{ height }} role="img" aria-label="Market price observations over time">
+      <ResponsiveContainer>
+        <ScatterChart margin={{ top: 10, right: 16, left: 4, bottom: 0 }}>
+          <CartesianGrid stroke={C.grid} strokeDasharray="3 3" />
+          <XAxis type="number" dataKey="t" domain={["dataMin - 86400000", "dataMax + 86400000"]} tickFormatter={date} tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} scale="time" />
+          <YAxis type="number" dataKey="price" tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} width={60} tickFormatter={(v) => usd(v)} domain={["auto", "auto"]} />
+          <ZAxis range={[70, 70]} />
+          {band && <ReferenceArea y1={band.low} y2={band.high} fill={C.gold} fillOpacity={0.1} stroke="none" />}
+          {band && <ReferenceLine y={band.mid} stroke={C.gold} strokeDasharray="5 4" label={{ value: `Market mid ${usd2(band.mid)}`, position: "insideTopLeft", fill: C.gold, fontSize: 11 }} />}
+          {floor != null && <ReferenceLine y={floor} stroke="var(--crit)" strokeDasharray="2 4" label={{ value: `Min-margin floor ${usd2(floor)}`, position: "insideBottomLeft", fill: "var(--crit)", fontSize: 11 }} />}
+          <Tooltip content={tip} cursor={{ strokeDasharray: "3 3" }} />
+          <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: "var(--text-2)" }} />
+          {series.map((s) => <Scatter key={s.k} name={s.name} data={points.filter((p) => p.kind === s.k)} fill={s.color} animationDuration={700} />)}
+        </ScatterChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+const usd2 = (v: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);

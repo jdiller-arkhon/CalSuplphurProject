@@ -143,6 +143,8 @@ const QUICK = [
   { label: "Receive inventory", href: "/inventory?action=receive", icon: "PackagePlus" },
   { label: "Scale ticket (yard mode)", href: "/yard", icon: "Scale" },
   { label: "Calculate a price", href: "/pricing", icon: "Calculator" },
+  { label: "Check market rate", href: "/market", icon: "LineChart" },
+  { label: "New tracker", href: "/tracking", icon: "Gauge" },
   { label: "Create quote", href: "/sales/quotes/new", icon: "FilePlus2" },
   { label: "Add product", href: "/products/new", icon: "PackageOpen" },
   { label: "Add customer", href: "/customers/new", icon: "UserPlus" },

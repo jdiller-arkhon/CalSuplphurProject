@@ -34,7 +34,6 @@ Nothing else on the website (prices, volumes, customers, grades, costs) was avai
 | 11 | **Scale tickets** | Gross and tare in kg; net converted to the product unit. Optional posting to inventory. | Does your scale print kg or lb? Ticket numbering you'd like to keep? |
 | 12 | **Negative stock** | Blocked by default (setting can allow it). | Ever ship before receipt is recorded? |
 | 13 | **Users & roles** | Max 3 active users: Owner, Manager, Viewer; Manager/Viewer permissions are editable. | Who are the users and what should each see? |
-| 14 | **Accounting system** | No integration. | Which system do you use (QuickBooks, other)? An export or sync can be added. |
-| 15 | **Email** | The app sends no email; invitation and recovery links are copied and sent by the owner. | Want optional email alerts/summaries? Which provider? |
+| 14 | **Email** | The app sends no email; invitation and recovery links are copied and sent by the owner. | Want optional email alerts/summaries? Which provider? |
 
 When answers come back, most changes are settings (Settings → Company & policies) or product data; items 1–3 change calculation code in `src/server/services/metrics.ts` and `inventory.ts`, which are covered by tests.

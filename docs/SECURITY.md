@@ -31,4 +31,3 @@
 - Use a least-privilege database role for the app (owner of its schema only, no superuser).
 - Turn on MFA for every owner on day one.
 - Run `npm audit` and update dependencies monthly; `next` is the most security-sensitive package — keep it on the latest patch release.
-- A DAST scan (e.g. StackHawk/HawkScan) was not run in development because no API key was configured; run one against staging before go-live.

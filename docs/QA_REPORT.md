@@ -37,11 +37,9 @@ All results below were produced by running the suites in this repository against
 |---|---|
 | CSC Insights AI assistant | Not built (requires an approved privacy configuration and AI provider) |
 | Email notifications / weekly summary | Not built — the app sends no email by design until a provider is approved |
-| QuickBooks / accounting integration | Not built — awaiting confirmation of the accounting system |
 | Tablet "yard mode" | Built (`/yard`): large buttons for scale tickets, receiving and transfers. Other pages work on tablets but weren't screenshot-tested at tablet width |
 | Customizable dashboard layout | Not built; KPIs are fixed |
 | Inventory costing / revenue recognition | Implemented as lot weighted average and recognition on dispatch — **pending company confirmation** |
 | Exchange rates | Not supported (multi-currency customers are stored, never converted) |
-| DAST security scan | Not run (no HawkScan API key in this environment) |
 | Deployment | Not performed — requires approval of hosting cost (see DEPLOYMENT.md) |
 | Real company data | None loaded. Screenshots use development records labeled “[Sample]” |

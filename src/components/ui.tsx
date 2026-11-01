@@ -56,7 +56,9 @@ export function PageHeader({ title, description, actions, crumbs, eyebrow }: { t
       <span className="hero-orb hero-orb-b" aria-hidden />
       <span className="hero-orb hero-orb-c" aria-hidden />
       <span className="hero-sweep" aria-hidden />
-      <HeroArt />
+      <span className="hero-spot" aria-hidden />
+      <span className="hero-sparks" aria-hidden>{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i * 0.73) % 6}s`, animationDuration: `${5 + (i % 5)}s` }} />)}</span>
+      <div className="hero-art-wrap"><HeroArt /></div>
       <div className="relative z-10 flex min-h-[150px] flex-col justify-end gap-6 md:max-w-[64%]">
         <div className="min-w-0">
           {crumbs && crumbs.length > 1 ? (
@@ -71,7 +73,7 @@ export function PageHeader({ title, description, actions, crumbs, eyebrow }: { t
           ) : (
             <div className="hero-in mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold"><span className="hero-live" aria-hidden />{kicker}</div>
           )}
-          <h1 className="hero-in hero-title text-[38px] font-semibold leading-[1.05] tracking-tight md:text-[54px]" style={{ animationDelay: ".06s" }}>{title}</h1>
+          <h1 className="hero-title text-[38px] font-semibold leading-[1.05] tracking-tight md:text-[54px]" style={{ animationDelay: ".06s" }}><SplitTitle text={title} /></h1>
           <div className="hero-rule mt-4" aria-hidden />
           {description && <p className="hero-in mt-4 max-w-xl text-[15px] leading-relaxed text-white/70" style={{ animationDelay: ".14s" }}>{description}</p>}
         </div>
@@ -81,6 +83,20 @@ export function PageHeader({ title, description, actions, crumbs, eyebrow }: { t
   );
 }
 
+
+function SplitTitle({ text }: { text: string }) {
+  let n = 0;
+  return (
+    <span aria-label={text}>
+      {text.split(" ").map((w, wi) => (
+        <span key={wi} aria-hidden className="inline-block whitespace-nowrap">
+          {[...w].map((ch, ci) => <span key={ci} className="hero-char" style={{ animationDelay: `${0.08 + n++ * 0.028}s` }}>{ch}</span>)}
+          {wi < text.split(" ").length - 1 && "\u00a0"}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 const tones = {
   neutral: "bg-surface-2 text-fg-2 border-line",

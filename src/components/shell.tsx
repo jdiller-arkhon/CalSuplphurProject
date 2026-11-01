@@ -1,4 +1,5 @@
 "use client";
+import { MotionFx } from "./motion-fx";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -238,7 +239,7 @@ export function AppFrame({ children, perms, user, unread, company }: { children:
       <Sidebar perms={perms} company={company} open={open} onClose={() => setOpen(false)} />
       <div className="lg:pl-[248px]">
         <Header user={user} unread={unread} onMenu={() => setOpen(true)} />
-        <main className="mx-auto max-w-[1440px] px-4 py-7 md:px-8">{children}</main>
+        <main className="mx-auto max-w-[1440px] px-4 py-7 md:px-8"><MotionFx />{children}</main>
       </div>
     </div>
   );

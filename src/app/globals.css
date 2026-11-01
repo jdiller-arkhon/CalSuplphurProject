@@ -337,3 +337,48 @@ dialog[open] { animation: pop .22s cubic-bezier(.2,.9,.3,1.2) both; }
   .ha-draw, .ha-draw-long, .ha-arc { stroke-dashoffset: 0 !important; }
 }
 .hero-art [transform] { transform-box: view-box; }
+
+/* ---------- Interactive heroes ---------- */
+.page-hero { --px: 0; --py: 0; --mx: 70%; --my: 30%; isolation: isolate; }
+.hero-spot { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(420px circle at var(--mx) var(--my), rgba(243,220,171,.13), transparent 60%); transition: background .2s; }
+.hero-art-wrap { position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  transform: translate3d(calc(var(--px) * -26px), calc(var(--py) * -18px), 0) rotateY(calc(var(--px) * 10deg)); transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.page-hero .hero-orb-a { translate: calc(var(--px) * 40px) calc(var(--py) * 30px); transition: translate .8s ease-out; }
+.page-hero .hero-orb-b { translate: calc(var(--px) * -50px) calc(var(--py) * -30px); transition: translate .8s ease-out; }
+.page-hero .hero-grid { translate: calc(var(--px) * 12px) calc(var(--py) * 8px); transition: translate .8s ease-out; }
+.page-hero:hover .hero-art * { animation-duration: inherit; }
+.page-hero:hover .hero-art { filter: drop-shadow(0 0 24px rgba(196,154,82,.35)); }
+.hero-art { transition: filter .5s; }
+
+.hero-title { background: none; color: #fff; }
+.hero-char { display: inline-block; background: linear-gradient(100deg, #fff 0%, #fff 40%, #f3dcab 60%, #fff 80%); background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: char-in .7s cubic-bezier(.2,.9,.25,1.2) both, title-shimmer 7s ease-in-out 1.6s infinite; }
+@keyframes char-in { from { opacity: 0; transform: translateY(.55em) rotateX(-70deg); filter: blur(6px); } }
+@keyframes title-shimmer { 0%, 70% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+.hero-sparks { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.hero-sparks i { position: absolute; bottom: -10px; width: 3px; height: 3px; border-radius: 50%; background: #f3dcab; box-shadow: 0 0 8px 2px rgba(243,220,171,.55); opacity: 0; animation: spark linear infinite; }
+.hero-sparks i:nth-child(3n) { background: #9cc0e4; box-shadow: 0 0 8px 2px rgba(156,192,228,.5); width: 2px; height: 2px; }
+@keyframes spark { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translate(30px, -340px); opacity: 0; } }
+
+.hero-rule { width: 72px; position: relative; overflow: hidden; }
+.hero-rule::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, #fff, transparent); transform: translateX(-100%); animation: rule-glint 4s ease-in-out 1.4s infinite; }
+@keyframes rule-glint { 0%, 60% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* ---------- Card tilt + shine ---------- */
+main .card { transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s; }
+main .card.is-tilt { transform: perspective(900px) rotateX(var(--rx, 0)) rotateY(var(--ry, 0)) translateY(-3px); box-shadow: 0 22px 40px -22px rgba(13,27,46,.45); transition: transform .12s ease-out, box-shadow .3s; position: relative; }
+main .card.is-tilt::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
+  background: radial-gradient(260px circle at var(--gx) var(--gy), rgba(196,154,82,.16), transparent 60%);
+  -webkit-mask: linear-gradient(#000, #000); }
+main .card.is-tilt::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 2;
+  background: radial-gradient(180px circle at var(--gx) var(--gy), #c49a52, transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-char, .hero-sparks i, .hero-rule::after { animation: none !important; opacity: 1; }
+  .hero-sparks { display: none; }
+  .hero-art-wrap, main .card.is-tilt { transform: none !important; }
+}

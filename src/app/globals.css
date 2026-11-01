@@ -244,3 +244,35 @@ dialog[open] { animation: pop .22s cubic-bezier(.2,.9,.3,1.2) both; }
   .hero-orb, .hero-sweep, .hero-in, .hero-rule, main > *, main .grid > *, tbody > tr, main .card, dialog[open] { animation: none !important; }
   aside nav a:hover, aside nav a:hover svg { transform: none; }
 }
+
+/* ---------- Big heroes ---------- */
+.page-hero { border-radius: 24px; background: radial-gradient(120% 140% at 0% 100%, #1d3a5c 0%, #0d1b2e 45%, #0a1422 100%); }
+.hero-title { background: linear-gradient(100deg, #fff 0%, #fff 55%, #f3dcab 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-grid { position: absolute; inset: 0; pointer-events: none; opacity: .35;
+  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 36px 36px; mask-image: radial-gradient(80% 90% at 75% 40%, #000 20%, transparent 75%);
+  animation: grid-pan 30s linear infinite; }
+@keyframes grid-pan { to { background-position: 36px 36px; } }
+.hero-orb-c { width: 220px; height: 220px; right: 4%; bottom: -120px; background: rgba(90,140,200,.45); animation: drift-a 17s ease-in-out infinite alternate-reverse; }
+.hero-live { width: 7px; height: 7px; border-radius: 50%; background: #c49a52; box-shadow: 0 0 0 0 rgba(196,154,82,.7); animation: live 2s ease-out infinite; }
+@keyframes live { 70% { box-shadow: 0 0 0 9px rgba(196,154,82,0); } 100% { box-shadow: 0 0 0 0 rgba(196,154,82,0); } }
+.hero-art { position: absolute; right: 2%; top: 50%; width: 300px; height: 300px; transform: translateY(-50%); pointer-events: none; z-index: 1; animation: art-in 1.2s cubic-bezier(.2,.7,.2,1) .15s both; }
+@media (max-width: 900px) { .hero-art { opacity: .25; right: -80px; } }
+@keyframes art-in { from { opacity: 0; transform: translateY(-50%) scale(.85) rotate(-20deg); } }
+.hero-ring { transform-origin: 160px 160px; animation: spin 40s linear infinite; }
+.hero-orbit { transform-origin: 160px 160px; }
+.hero-orbit-1 { animation: spin 12s linear infinite; }
+.hero-orbit-2 { animation: spin 18s linear infinite reverse; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.hero-atom { transform-box: fill-box; transform-origin: center; animation: atom-pop .6s cubic-bezier(.3,1.6,.5,1) both, atom-breathe 3.5s ease-in-out 1.2s infinite alternate; }
+@keyframes atom-pop { from { transform: scale(0); } }
+@keyframes atom-breathe { to { transform: scale(1.12); } }
+.hero-bond { stroke-dasharray: 80; stroke-dashoffset: 80; animation: bond-draw .7s ease-out forwards; }
+@keyframes bond-draw { to { stroke-dashoffset: 0; } }
+.hero-halo { animation: halo 4s ease-in-out infinite alternate; transform-origin: 160px 160px; }
+@keyframes halo { to { opacity: .55; transform: scale(1.08); } }
+.hero-formula { fill: rgba(243,220,171,.85); font-size: 30px; font-weight: 600; letter-spacing: .02em; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-grid, .hero-orb-c, .hero-live, .hero-art, .hero-ring, .hero-orbit, .hero-atom, .hero-bond, .hero-halo { animation: none !important; }
+  .hero-bond { stroke-dashoffset: 0; }
+}

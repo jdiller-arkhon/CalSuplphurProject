@@ -49,14 +49,17 @@ export function Card({ className, children, title, action, pad = true }: { class
 export function PageHeader({ title, description, actions, crumbs, eyebrow }: { title: string; description?: ReactNode; actions?: ReactNode; crumbs?: { label: string; href?: string }[]; eyebrow?: string }) {
   const kicker = eyebrow ?? crumbs?.[0]?.label ?? "CSC Command";
   return (
-    <section className="hero page-hero rise mb-7 px-6 py-7 md:px-8 md:py-8">
+    <section className="hero page-hero rise mb-8 px-6 py-10 md:px-10 md:py-14">
+      <span className="hero-grid" aria-hidden />
       <span className="hero-orb hero-orb-a" aria-hidden />
       <span className="hero-orb hero-orb-b" aria-hidden />
+      <span className="hero-orb hero-orb-c" aria-hidden />
       <span className="hero-sweep" aria-hidden />
-      <div className="relative z-10 flex flex-wrap items-end justify-between gap-5">
+      <HeroArt />
+      <div className="relative z-10 flex min-h-[150px] flex-col justify-end gap-6 md:max-w-[64%]">
         <div className="min-w-0">
           {crumbs && crumbs.length > 1 ? (
-            <nav aria-label="Breadcrumb" className="hero-in mb-2 flex items-center gap-1.5 text-xs text-white/55">
+            <nav aria-label="Breadcrumb" className="hero-in mb-3 flex items-center gap-1.5 text-xs text-white/55">
               {crumbs.map((c, i) => (
                 <span key={i} className="flex items-center gap-1.5">
                   {i > 0 && <span aria-hidden>/</span>}
@@ -65,15 +68,38 @@ export function PageHeader({ title, description, actions, crumbs, eyebrow }: { t
               ))}
             </nav>
           ) : (
-            <div className="hero-in mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">{kicker}</div>
+            <div className="hero-in mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold"><span className="hero-live" aria-hidden />{kicker}</div>
           )}
-          <h1 className="hero-in hero-title truncate text-[28px] font-semibold tracking-tight text-white md:text-[32px]" style={{ animationDelay: ".06s" }}>{title}</h1>
-          <div className="hero-rule mt-3" aria-hidden />
-          {description && <p className="hero-in mt-3 max-w-2xl text-sm text-white/65" style={{ animationDelay: ".12s" }}>{description}</p>}
+          <h1 className="hero-in hero-title text-[38px] font-semibold leading-[1.05] tracking-tight md:text-[54px]" style={{ animationDelay: ".06s" }}>{title}</h1>
+          <div className="hero-rule mt-4" aria-hidden />
+          {description && <p className="hero-in mt-4 max-w-xl text-[15px] leading-relaxed text-white/70" style={{ animationDelay: ".14s" }}>{description}</p>}
         </div>
-        {actions && <div data-theme="dark" className="hero-in flex flex-wrap items-center gap-2 text-fg" style={{ animationDelay: ".18s" }}>{actions}</div>}
+        {actions && <div data-theme="dark" className="hero-in flex flex-wrap items-center gap-2 text-fg" style={{ animationDelay: ".22s" }}>{actions}</div>}
       </div>
     </section>
+  );
+}
+
+function HeroArt() {
+  const atoms = Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    return { x: 160 + Math.cos(a) * 92, y: 160 + Math.sin(a) * 92 * (i % 2 ? 0.86 : 1) };
+  });
+  return (
+    <svg className="hero-art" viewBox="0 0 320 320" aria-hidden>
+      <defs>
+        <radialGradient id="atom" cx="35%" cy="30%" r="70%"><stop offset="0" stopColor="#fbe7b5" /><stop offset=".55" stopColor="#c49a52" /><stop offset="1" stopColor="#6b4e1f" /></radialGradient>
+        <radialGradient id="halo"><stop offset="0" stopColor="rgba(196,154,82,.35)" /><stop offset="1" stopColor="rgba(196,154,82,0)" /></radialGradient>
+      </defs>
+      <circle cx="160" cy="160" r="150" fill="url(#halo)" className="hero-halo" />
+      <g className="hero-orbit hero-orbit-1"><ellipse cx="160" cy="160" rx="148" ry="54" fill="none" stroke="rgba(255,255,255,.12)" /><circle cx="308" cy="160" r="3.5" fill="#f3dcab" /></g>
+      <g className="hero-orbit hero-orbit-2"><ellipse cx="160" cy="160" rx="54" ry="148" fill="none" stroke="rgba(255,255,255,.08)" /><circle cx="160" cy="12" r="2.5" fill="#9cc0e4" /></g>
+      <g className="hero-ring">
+        {atoms.map((p, i) => { const q = atoms[(i + 1) % 8]; return <line key={"b" + i} x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke="rgba(243,220,171,.55)" strokeWidth="3" strokeLinecap="round" className="hero-bond" style={{ animationDelay: `${0.4 + i * 0.08}s` }} />; })}
+        {atoms.map((p, i) => <circle key={"a" + i} cx={p.x} cy={p.y} r="15" fill="url(#atom)" className="hero-atom" style={{ animationDelay: `${0.3 + i * 0.08}s` }} />)}
+      </g>
+      <text x="160" y="170" textAnchor="middle" className="hero-formula">S₈</text>
+    </svg>
   );
 }
 

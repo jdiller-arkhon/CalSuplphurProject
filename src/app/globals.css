@@ -195,3 +195,52 @@ a > .card:hover, .card.lift:hover { transform: translateY(-2px); box-shadow: var
 .btn-shine::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%); transform: translateX(-120%); transition: transform .7s; }
 .btn-shine:hover::after { transform: translateX(120%); }
 @media (prefers-reduced-motion: reduce) { .hero::after, .stagger > * { animation: none; } .card, .glass-tile { transition: none; } }
+
+/* ───────── Heroes & motion ───────── */
+.page-hero { border-radius: 18px; }
+.page-hero::after { width: 420px; height: 420px; right: -120px; top: -220px; }
+[data-theme="dark"] .page-hero { box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 30px 60px -30px rgba(0,0,0,.7); }
+.hero-orb { position: absolute; border-radius: 50%; filter: blur(50px); pointer-events: none; opacity: .55; }
+.hero-orb-a { width: 260px; height: 260px; left: 8%; bottom: -160px; background: rgba(54,93,131,.9); animation: drift-a 14s ease-in-out infinite alternate; }
+.hero-orb-b { width: 180px; height: 180px; left: 46%; top: -110px; background: rgba(196,154,82,.55); animation: drift-b 11s ease-in-out infinite alternate; }
+@keyframes drift-a { to { transform: translate(140px, -40px) scale(1.15); } }
+@keyframes drift-b { to { transform: translate(-120px, 50px) scale(.9); } }
+.hero-sweep { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.07) 50%, transparent 65%); transform: translateX(-100%); animation: sweep 3.2s cubic-bezier(.4,0,.2,1) .4s 1 both; pointer-events: none; }
+@keyframes sweep { to { transform: translateX(100%); } }
+.hero-in { animation: hero-in .6s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes hero-in { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+.hero-rule { height: 2px; width: 56px; border-radius: 2px; background: linear-gradient(90deg, #c49a52, #f3dcab); transform-origin: left; animation: grow .8s cubic-bezier(.2,.7,.2,1) .25s both; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Content below the hero cascades in */
+main > * { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
+main > *:nth-child(2) { animation-delay: .08s } main > *:nth-child(3) { animation-delay: .14s } main > *:nth-child(4) { animation-delay: .2s } main > *:nth-child(5) { animation-delay: .26s } main > *:nth-child(n+6) { animation-delay: .32s }
+/* Grid children (KPI rows, card grids) stagger */
+main .grid > * { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
+main .grid > *:nth-child(2) { animation-delay: .05s } main .grid > *:nth-child(3) { animation-delay: .1s } main .grid > *:nth-child(4) { animation-delay: .15s } main .grid > *:nth-child(5) { animation-delay: .2s } main .grid > *:nth-child(6) { animation-delay: .25s } main .grid > *:nth-child(n+7) { animation-delay: .3s }
+/* Table rows fade in one after another */
+tbody > tr { animation: row-in .4s ease-out both; }
+tbody > tr:nth-child(2) { animation-delay: .03s } tbody > tr:nth-child(3) { animation-delay: .06s } tbody > tr:nth-child(4) { animation-delay: .09s } tbody > tr:nth-child(5) { animation-delay: .12s } tbody > tr:nth-child(6) { animation-delay: .15s } tbody > tr:nth-child(7) { animation-delay: .18s } tbody > tr:nth-child(8) { animation-delay: .21s } tbody > tr:nth-child(n+9) { animation-delay: .24s }
+@keyframes row-in { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+/* Cards further down reveal as they scroll into view */
+@supports (animation-timeline: view()) {
+  main .card { animation: reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 30%; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(24px) scale(.98); } to { opacity: 1; transform: none; } }
+}
+/* Interaction polish */
+.card { will-change: transform; }
+main .card:hover { border-color: color-mix(in srgb, var(--gold) 35%, var(--border)); }
+aside nav a { transition: background .15s, color .15s, transform .15s; }
+aside nav a:hover { transform: translateX(3px); }
+aside nav a svg { transition: transform .25s cubic-bezier(.3,1.6,.5,1); }
+aside nav a:hover svg { transform: scale(1.15) rotate(-6deg); }
+button, a { -webkit-tap-highlight-color: transparent; }
+button:active:not(:disabled) { transform: scale(.97); }
+dialog[open] { animation: pop .22s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
+.badge-pulse, .pulse-dot > span > span:first-child { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-orb, .hero-sweep, .hero-in, .hero-rule, main > *, main .grid > *, tbody > tr, main .card, dialog[open] { animation: none !important; }
+  aside nav a:hover, aside nav a:hover svg { transform: none; }
+}

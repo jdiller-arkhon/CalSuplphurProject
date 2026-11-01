@@ -2,6 +2,7 @@ import Link from "next/link";
 import { clsx } from "clsx";
 import type { ComponentProps, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import { CountText } from "./count-text";
 
 export const cx = clsx;
 
@@ -41,25 +42,38 @@ export function Card({ className, children, title, action, pad = true }: { class
   );
 }
 
-export function PageHeader({ title, description, actions, crumbs }: { title: string; description?: ReactNode; actions?: ReactNode; crumbs?: { label: string; href?: string }[] }) {
+/**
+ * Every page opens with a hero: navy panel, gold glow, drifting light and grid texture.
+ * Actions render on dark tokens (data-theme="dark") so buttons read correctly on the panel.
+ */
+export function PageHeader({ title, description, actions, crumbs, eyebrow }: { title: string; description?: ReactNode; actions?: ReactNode; crumbs?: { label: string; href?: string }[]; eyebrow?: string }) {
+  const kicker = eyebrow ?? crumbs?.[0]?.label ?? "CSC Command";
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div className="min-w-0">
-        {crumbs && (
-          <nav aria-label="Breadcrumb" className="mb-1.5 flex items-center gap-1.5 text-xs text-fg-3">
-            {crumbs.map((c, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                {i > 0 && <span aria-hidden>/</span>}
-                {c.href ? <Link className="hover:text-fg" href={c.href}>{c.label}</Link> : <span className="text-fg-2">{c.label}</span>}
-              </span>
-            ))}
-          </nav>
-        )}
-        <h1 className="truncate text-[24px] font-semibold tracking-tight text-fg">{title}</h1>
-        {description && <p className="mt-1 max-w-2xl text-sm text-fg-2">{description}</p>}
+    <section className="hero page-hero rise mb-7 px-6 py-7 md:px-8 md:py-8">
+      <span className="hero-orb hero-orb-a" aria-hidden />
+      <span className="hero-orb hero-orb-b" aria-hidden />
+      <span className="hero-sweep" aria-hidden />
+      <div className="relative z-10 flex flex-wrap items-end justify-between gap-5">
+        <div className="min-w-0">
+          {crumbs && crumbs.length > 1 ? (
+            <nav aria-label="Breadcrumb" className="hero-in mb-2 flex items-center gap-1.5 text-xs text-white/55">
+              {crumbs.map((c, i) => (
+                <span key={i} className="flex items-center gap-1.5">
+                  {i > 0 && <span aria-hidden>/</span>}
+                  {c.href ? <Link className="hover:text-gold" href={c.href}>{c.label}</Link> : <span className="text-white/80">{c.label}</span>}
+                </span>
+              ))}
+            </nav>
+          ) : (
+            <div className="hero-in mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">{kicker}</div>
+          )}
+          <h1 className="hero-in hero-title truncate text-[28px] font-semibold tracking-tight text-white md:text-[32px]" style={{ animationDelay: ".06s" }}>{title}</h1>
+          <div className="hero-rule mt-3" aria-hidden />
+          {description && <p className="hero-in mt-3 max-w-2xl text-sm text-white/65" style={{ animationDelay: ".12s" }}>{description}</p>}
+        </div>
+        {actions && <div data-theme="dark" className="hero-in flex flex-wrap items-center gap-2 text-fg" style={{ animationDelay: ".18s" }}>{actions}</div>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </div>
+    </section>
   );
 }
 
@@ -93,7 +107,8 @@ export function statusTone(s: string): Tone {
   return "neutral";
 }
 export function StatusBadge({ status }: { status: string }) {
-  return <Badge tone={statusTone(status)} dot>{status}</Badge>;
+  const tone = statusTone(status);
+  return <span className={tone === "warn" ? "pulse-dot" : undefined}><Badge tone={tone} dot>{status}</Badge></span>;
 }
 
 export function Kpi({ label, value, sub, href, tone, icon: Icon }: { label: string; value: ReactNode; sub?: ReactNode; href?: string; tone?: Tone; icon?: LucideIcon }) {
@@ -103,7 +118,7 @@ export function Kpi({ label, value, sub, href, tone, icon: Icon }: { label: stri
         {Icon && <Icon size={14} className="text-fg-3 group-hover:text-accent" aria-hidden />}
         <span>{label}</span>
       </div>
-      <div className={cx("num mt-3 text-[26px] font-semibold tracking-tight", tone === "crit" ? "text-crit" : tone === "warn" ? "text-warn" : tone === "pos" ? "text-pos" : "text-fg")}>{value}</div>
+      <div className={cx("num mt-3 text-[26px] font-semibold tracking-tight", tone === "crit" ? "text-crit" : tone === "warn" ? "text-warn" : tone === "pos" ? "text-pos" : "text-fg")}>{typeof value === "string" || typeof value === "number" ? <CountText text={String(value)} /> : value}</div>
       {sub && <div className="mt-1 text-xs text-fg-3">{sub}</div>}
     </div>
   );

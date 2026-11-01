@@ -1,7 +1,7 @@
 import { requireUser } from "@/server/auth";
 import { db } from "@/server/db";
 import { Card, PageHeader } from "@/components/ui";
-import { lineProducts } from "@/server/line-products";
+import { lineProducts, agreedPriceMap } from "@/server/line-products";
 import { createQuoteAction } from "@/server/actions/sales";
 import { getSettingTyped } from "@/server/services/settings";
 import { SalesDocForm } from "../../doc-form";
@@ -19,6 +19,7 @@ export default async function NewQuote({ searchParams }: { searchParams: Promise
       <PageHeader title="New quote" crumbs={[{ label: "Sales", href: "/sales" }, { label: "New quote" }]} description={scenario ? `From pricing scenario “${scenario.name}”. Cost snapshot is taken from the scenario's landed cost.` : "Prices below a product's minimum margin will require owner approval."} />
       <Card>
         <SalesDocForm
+          agreements={await agreedPriceMap()}
           kind="quote"
           action={createQuoteAction}
           products={products}

@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
+
 import { ActionForm, Submit, FieldError, type ActionFn } from "@/components/forms";
 import { LineEditor, type LineInit, type LineProduct } from "@/components/line-editor";
 import { Field, Input, Select, Textarea } from "@/components/ui";
 
-export function SalesDocForm({ kind, action, products, customers, initial }: { kind: "quote" | "order"; action: ActionFn; products: LineProduct[]; customers: { id: string; name: string; paymentTerms: string | null }[]; initial: { customerId?: string; scenarioId?: string; validUntil?: string; deliveryTerms?: string; paymentTerms?: string; notes?: string; lines?: LineInit[] } }) {
+export function SalesDocForm({ kind, action, products, customers, agreements, initial }: { kind: "quote" | "order"; action: ActionFn; products: LineProduct[]; customers: { id: string; name: string; paymentTerms: string | null }[]; agreements?: Record<string, Record<string, string>>; initial: { customerId?: string; scenarioId?: string; validUntil?: string; deliveryTerms?: string; paymentTerms?: string; notes?: string; lines?: LineInit[] } }) {
+  const [customerId, setCustomerId] = useState(initial.customerId ?? "");
   return (
     <ActionForm action={action} className="space-y-6">
       {(s) => (
@@ -12,7 +15,7 @@ export function SalesDocForm({ kind, action, products, customers, initial }: { k
           {initial.scenarioId && <input type="hidden" name="scenarioId" value={initial.scenarioId} />}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Field label="Customer *" name="customerId" className="lg:col-span-2">
-              <Select name="customerId" required defaultValue={initial.customerId ?? ""}>
+              <Select name="customerId" required value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
                 <option value="">Select customer…</option>
                 {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Select>
@@ -29,7 +32,7 @@ export function SalesDocForm({ kind, action, products, customers, initial }: { k
           </div>
           <div>
             <div className="mb-2 text-[12px] font-medium text-fg-2">Lines</div>
-            <LineEditor products={products} initial={initial.lines} />
+            <LineEditor products={products} initial={initial.lines} agreedPrices={agreements?.[customerId]} />
             <FieldError state={s} name="lines" />
           </div>
           <Field label="Notes (printed on the document)" name="notes"><Textarea name="notes" defaultValue={initial.notes} /></Field>

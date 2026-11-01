@@ -1,7 +1,7 @@
 import { requireUser } from "@/server/auth";
 import { db } from "@/server/db";
 import { Card, PageHeader } from "@/components/ui";
-import { lineProducts } from "@/server/line-products";
+import { lineProducts, agreedPriceMap } from "@/server/line-products";
 import { createOrderAction } from "@/server/actions/sales";
 import { SalesDocForm } from "../../doc-form";
 
@@ -13,7 +13,7 @@ export default async function NewOrder() {
   return (
     <>
       <PageHeader title="New sales order" crumbs={[{ label: "Sales", href: "/sales?tab=orders" }, { label: "New order" }]} description="For orders agreed without a formal quote. Estimated cost is snapshotted from current inventory cost." />
-      <Card><SalesDocForm kind="order" action={createOrderAction} products={products} customers={customers} initial={{}} /></Card>
+      <Card><SalesDocForm agreements={await agreedPriceMap()} kind="order" action={createOrderAction} products={products} customers={customers} initial={{}} /></Card>
     </>
   );
 }

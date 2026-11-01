@@ -140,6 +140,7 @@ function UserMenu({ user }: { user: { name: string; email: string; role: string 
 type Hit = { type: string; id: string; title: string; subtitle?: string; href: string };
 const QUICK = [
   { label: "Receive inventory", href: "/inventory?action=receive", icon: "PackagePlus" },
+  { label: "Scale ticket (yard mode)", href: "/yard", icon: "Scale" },
   { label: "Calculate a price", href: "/pricing", icon: "Calculator" },
   { label: "Create quote", href: "/sales/quotes/new", icon: "FilePlus2" },
   { label: "Add product", href: "/products/new", icon: "PackageOpen" },

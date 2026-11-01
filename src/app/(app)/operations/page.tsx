@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Scale, Factory, Truck as TruckIcon, Plus } from "lucide-react";
+import { Scale, Factory, Truck as TruckIcon, Plus, Tablet } from "lucide-react";
 import { requireUser, can } from "@/server/auth";
 import { db } from "@/server/db";
 import { dec, fmtMoney, fmtPct, fmtQty } from "@/lib/decimal";
 import { lookups, today } from "@/server/lookups";
-import { Card, PageHeader, Table, Empty, Badge, Kpi, cx } from "@/components/ui";
+import { Card, PageHeader, Table, Empty, Badge, Kpi, cx, buttonClass } from "@/components/ui";
 import { FormModal } from "@/components/form-modal";
 import { ticketAction, productionAction, saveTruck } from "@/server/actions/plant";
 
@@ -52,7 +52,7 @@ export default async function Operations({ searchParams }: { searchParams: Promi
 
   return (
     <>
-      <PageHeader title="Plant operations" description="Weighbridge tickets, pelletizer production runs and the truck fleet." actions={op ? (tab === "production" ? (
+      <PageHeader title="Plant operations" description="Weighbridge tickets, pelletizer production runs and the truck fleet." actions={op ? (<><Link href="/yard" className={buttonClass("secondary")}><Tablet size={14} /> Yard mode</Link>{tab === "production" ? (
         <FormModal title="Record a pelletizer run" trigger="Record run" triggerVariant="primary" triggerSize="md" icon={<Factory size={14} />} action={productionAction} submit="Record run" wide
           intro="Takes the input (e.g. molten) out of its lot and adds the output (e.g. prill) to a lot. Output cost = (input cost + processing cost) ÷ output tons, so any loss is priced into the product made."
           fields={[
@@ -68,7 +68,7 @@ export default async function Operations({ searchParams }: { searchParams: Promi
           ]} />
       ) : tab === "trucks" ? (
         <FormModal title="Add truck" trigger="Add truck" triggerVariant="primary" triggerSize="md" icon={<Plus size={14} />} action={saveTruck} fields={[{ name: "code", label: "Truck number", required: true, placeholder: "e.g. T-07" }, { name: "plate", label: "License plate" }, { name: "notes", label: "Notes", span: 2 }]} />
-      ) : (<>{ticketForm("OUT")}{ticketForm("IN")}</>)) : undefined} />
+      ) : (<>{ticketForm("OUT")}{ticketForm("IN")}</>)}</>) : undefined} />
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Received by scale (30 days)" value={fmtQty(tIn._sum.netQty, 0)} sub={`${tIn._count} tickets`} />

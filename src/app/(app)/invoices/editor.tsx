@@ -131,7 +131,7 @@ export function InvoiceEditor({ customers, products, lots, agreed, initial, defa
             {stockLines > 0 && <div className="flex items-start gap-1.5 pt-2 text-xs text-fg-2"><Boxes size={13} className="mt-0.5 shrink-0 text-gold" />Issuing takes stock from {stockLines} lot{stockLines === 1 ? "" : "s"}. Voiding later puts it back.</div>}
           </dl>
           <div className="flex flex-col gap-2 border-t border-line p-5">
-            <button type="submit" name="intent" value="issue" className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gold px-4 text-sm font-semibold text-sidebar shadow-sm transition hover:brightness-105"><Send size={15} /> Issue invoice</button>
+            <button type="submit" name="intent" value="issue" className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sulphur px-4 text-sm font-semibold text-sidebar shadow-sm transition hover:brightness-105"><Send size={15} /> Issue invoice</button>
             <Submit variant="secondary"><Save size={14} /> Save as draft</Submit>
             <p className="text-center text-[11px] text-fg-3">Issuing assigns the invoice number and locks it.</p>
           </div>

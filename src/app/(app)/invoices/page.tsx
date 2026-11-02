@@ -44,7 +44,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
         <div className="mb-6 grid gap-6 lg:grid-cols-2">
           <Card title="How late is the money?">
             <div className="space-y-2.5">
-              {([["Not yet due", ar.buckets.current, "bg-accent"], ["1–30 days late", ar.buckets.d1_30, "bg-gold"], ["31–60 days late", ar.buckets.d31_60, "bg-warn"], ["61–90 days late", ar.buckets.d61_90, "bg-crit/70"], ["Over 90 days", ar.buckets.d90, "bg-crit"]] as const).map(([l, v, c], i) => (
+              {([["Not yet due", ar.buckets.current, "bg-accent"], ["1–30 days late", ar.buckets.d1_30, "bg-sulphur"], ["31–60 days late", ar.buckets.d31_60, "bg-warn"], ["61–90 days late", ar.buckets.d61_90, "bg-crit/70"], ["Over 90 days", ar.buckets.d90, "bg-crit"]] as const).map(([l, v, c], i) => (
                 <div key={l} className="grid grid-cols-[120px_1fr_100px] items-center gap-3 text-sm">
                   <span className="text-fg-2">{l}</span>
                   <div className="h-2.5 rounded-full bg-surface-2"><div className={cx("bar-grow h-2.5 rounded-full", c)} style={{ width: `${v.div(bucketMax).times(100).toNumber()}%`, animationDelay: `${i * 0.08}s` }} /></div>

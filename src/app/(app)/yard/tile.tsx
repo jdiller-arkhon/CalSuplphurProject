@@ -7,7 +7,7 @@ import { buttonClass, cx } from "@/components/ui";
 
 /** Large touch target that opens a form — for use on a tablet in the yard or scale house. */
 export function YardTile({ title, subtitle, icon, tone, action, fields, hidden, submit }: { title: string; subtitle: string; icon: ReactNode; tone: "accent" | "gold" | "pos" | "neutral"; action: ActionFn; fields: FieldDef[]; hidden?: Record<string, string>; submit: string }) {
-  const toneCls = { accent: "from-[#365D83] to-[#284866] text-white", gold: "from-[#d9b26e] to-[#b98a3e] text-[#101d2e]", pos: "from-[#1c9a7b] to-[#127058] text-white", neutral: "from-[#1a2b41] to-[#101d2e] text-white" }[tone];
+  const toneCls = { accent: "from-[#2422a0] to-[#284866] text-white", gold: "from-[#d9b26e] to-[#c9b21c] text-[#1e2a3a]", pos: "from-[#1c9a7b] to-[#127058] text-white", neutral: "from-[#26354a] to-[#1e2a3a] text-white" }[tone];
   return (
     <Modal title={title} wide trigger={(open) => (
       <button onClick={open} className={cx("rise flex min-h-[180px] w-full flex-col justify-between rounded-2xl bg-gradient-to-br p-7 text-left shadow-[var(--shadow-lg)] transition active:scale-[0.98]", toneCls)}>

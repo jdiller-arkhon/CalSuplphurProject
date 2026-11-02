@@ -4,7 +4,9 @@ import { db } from "../db";
 import { getSettingTyped, getSetting } from "../services/settings";
 import { readStored } from "../storage";
 
-const NAVY = "#101D2E", GOLD = "#C49A52", INK = "#172436", MUTED = "#64748B", LINE = "#E3E9F0";
+// California Sulphur Company brand colours (from calsulco.com): sulphur yellow, royal blue, dark slate.
+const CSC_YELLOW = "#EBDB3B", CSC_BLUE = "#1E1C9E", CSC_SLATE = "#1E2A3A";
+const NAVY = "#1e2a3a", GOLD = "#e5d33a", INK = "#172436", MUTED = "#64748B", LINE = "#E3E9F0";
 
 /** Branded, printable customer quote. Only customer-facing fields are printed (never cost or margin). */
 export async function quotePdf(quoteId: string): Promise<Buffer> {
@@ -16,14 +18,22 @@ export async function quotePdf(quoteId: string): Promise<Buffer> {
   const done = new Promise<Buffer>((r) => doc.on("end", () => r(Buffer.concat(chunks))));
   const W = doc.page.width, L = 54, R = W - 54;
 
-  doc.rect(0, 0, W, 96).fill(NAVY);
-  doc.rect(0, 96, W, 3).fill(GOLD);
-  doc.fillColor("#FFFFFF").font("Helvetica-Bold").fontSize(18).text(co.name || "California Sulphur Company", L, 30, { width: 330 });
-  doc.font("Helvetica").fontSize(9).fillColor("#C7D2DF").text([co.address, [co.phone, co.email].filter(Boolean).join(" · ")].filter(Boolean).join("\n") || " ", L, 54, { width: 330 });
-  doc.font("Helvetica-Bold").fontSize(22).fillColor(GOLD).text("QUOTATION", 330, 28, { width: R - 330, align: "right" });
-  doc.font("Helvetica").fontSize(10).fillColor("#FFFFFF").text(q.number, 330, 58, { width: R - 330, align: "right" });
+  // CSC letterhead (same as invoices)
+  const coName = co.name || "California Sulphur Company";
+  doc.rect(0, 0, W, 6).fill(CSC_SLATE); doc.rect(0, 6, W, 2).fill(CSC_YELLOW);
+  await drawBrand(doc, L, 30, coName);
+  doc.font("Helvetica").fontSize(8.5).fillColor(MUTED).text([co.address, co.phone, co.email, co.website].filter(Boolean).join("\n") || " ", R - 220, 34, { width: 220, align: "right", lineGap: 1.5 });
+  const ruleY = Math.max(96, doc.y + 14);
+  doc.moveTo(L, ruleY).lineTo(R, ruleY).lineWidth(0.6).strokeColor("#DDE1E8").stroke();
+  doc.font("Times-Roman").fontSize(30).fillColor(CSC_BLUE).text("Quotation", L, ruleY + 16, { lineBreak: false });
+  doc.font("Helvetica").fontSize(10).fillColor(MUTED).text(q.number, L, ruleY + 52, { lineBreak: false });
+  doc.font("Helvetica-Bold").fontSize(8);
+  const vt = `VALID UNTIL ${q.validUntil.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toUpperCase()}`;
+  const vw = doc.widthOfString(vt, { characterSpacing: 1.1 }) + 22;
+  doc.roundedRect(R - vw, ruleY + 24, vw, 20, 10).lineWidth(1).strokeColor(CSC_BLUE).stroke();
+  doc.fillColor(CSC_BLUE).text(vt, R - vw, ruleY + 30.5, { width: vw, align: "center", characterSpacing: 1.1, lineBreak: false });
 
-  let y = 124;
+  let y = ruleY + 84;
   const label = (t: string, x: number, yy: number) => doc.font("Helvetica-Bold").fontSize(8).fillColor(MUTED).text(t.toUpperCase(), x, yy, { characterSpacing: 0.8 });
   label("Prepared for", L, y);
   doc.font("Helvetica-Bold").fontSize(12).fillColor(INK).text(q.customer.name, L, y + 13, { width: 260 });
@@ -37,7 +47,7 @@ export async function quotePdf(quoteId: string): Promise<Buffer> {
 
   y = Math.max(y + 140, doc.y + 20);
   const cols = [{ t: "Product", x: L, w: 220, a: "left" }, { t: "Quantity", x: L + 220, w: 90, a: "right" }, { t: "Unit price", x: L + 310, w: 90, a: "right" }, { t: "Amount", x: L + 400, w: R - L - 400, a: "right" }] as const;
-  doc.rect(L, y, R - L, 22).fill("#E8EEF5");
+  doc.rect(L, y, R - L, 22).fill("#eaeaf9");
   cols.forEach((c) => doc.font("Helvetica-Bold").fontSize(9).fillColor(INK).text(c.t, c.x + 6, y + 7, { width: c.w - 12, align: c.a }));
   y += 22;
   let total = new D(0);
@@ -68,14 +78,13 @@ export async function quotePdf(quoteId: string): Promise<Buffer> {
   // Footer sits inside the bottom margin; drop the margin so pdfkit doesn't start a new page for it.
   doc.page.margins.bottom = 0;
   doc.moveTo(L, doc.page.height - 66).lineTo(R, doc.page.height - 66).lineWidth(0.5).strokeColor(LINE).stroke();
-  doc.fontSize(8).fillColor(MUTED).text(`${co.name || "California Sulphur Company"} · ${q.number}`, L, doc.page.height - 58, { width: R - L, align: "center", lineBreak: false });
+  doc.font("Helvetica-Bold").fontSize(8).fillColor(CSC_BLUE).text(`${coName} · ${q.number}`, L, doc.page.height - 58, { width: R - L, align: "center", lineBreak: false });
+  doc.rect(0, doc.page.height - 6, W, 6).fill(CSC_SLATE); doc.rect(0, doc.page.height - 8, W, 2).fill(CSC_YELLOW);
   doc.end();
   return done;
 }
 
 
-// California Sulphur Company brand colours (from calsulco.com): sulphur yellow, royal blue, dark slate.
-const CSC_YELLOW = "#EBDB3B", CSC_BLUE = "#1E1C9E", CSC_SLATE = "#1E2A3A";
 
 /** Company mark: the uploaded logo if there is one, otherwise the CSC element tile (yellow square, blue S, "CA" and 16 for sulphur) with the wordmark. */
 async function drawBrand(doc: PDFKit.PDFDocument, x: number, y: number, name: string) {

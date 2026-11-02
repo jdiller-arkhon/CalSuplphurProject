@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, ReferenceLine, ReferenceArea, ScatterChart, Scatter, ZAxis, Legend, ComposedChart, Line } from "recharts";
 
-const C = { accent: "var(--accent)", gold: "var(--gold)", pos: "var(--pos)", grid: "var(--border)", text: "var(--text-3)" };
+const C = { accent: "var(--accent)", gold: "var(--gold)", sulphur: "#d9c82c", pos: "var(--pos)", grid: "var(--border)", text: "var(--text-3)" };
 const compact = (v: number) => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v);
 const usd = (v: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
 
@@ -35,12 +35,12 @@ export function RevenueTrend({ data, height = 260 }: { data: TrendPoint[]; heigh
           <YAxis tick={{ fill: C.text, fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={compact} width={48} />
           <Tooltip content={<Tip />} cursor={{ fill: "var(--surface-2)" }} />
           <Bar dataKey="revenue" name="Revenue" fill={C.accent} radius={[4, 4, 0, 0]} maxBarSize={26} />
-          <Bar dataKey="profit" name="Gross profit" fill={C.gold} radius={[4, 4, 0, 0]} maxBarSize={26} />
+          <Bar dataKey="profit" name="Gross profit" fill={C.sulphur} radius={[4, 4, 0, 0]} maxBarSize={26} />
         </BarChart>
       </ResponsiveContainer>
       <div className="mt-2 flex gap-4 text-xs text-fg-2" aria-hidden>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-accent" />Revenue</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-gold" />Gross profit</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-sulphur" />Gross profit</span>
       </div>
     </div>
   );
@@ -58,7 +58,7 @@ export function HBar({ data, money = true, height, color = "accent" }: { data: {
           <Tooltip content={<Tip money={money} />} cursor={{ fill: "var(--surface-2)" }} />
           <Bar dataKey="value" name={money ? "Value" : "Quantity"} radius={[0, 4, 4, 0]} maxBarSize={18} onClick={(d: { payload?: { href?: string } }) => d.payload?.href && router.push(d.payload.href)} className="cursor-pointer">
             {data.map((_, i) => (
-              <Cell key={i} fill={C[color]} fillOpacity={1 - i * 0.06} />
+              <Cell key={i} fill={color === "gold" ? C.sulphur : C[color]} fillOpacity={1 - i * 0.06} />
             ))}
           </Bar>
         </BarChart>
@@ -77,7 +77,7 @@ export function StockBars({ data }: { data: { label: string; reserved: number; a
           <YAxis type="category" dataKey="label" width={168} tick={{ fill: "var(--text-2)", fontSize: 12 }} tickLine={false} axisLine={false} />
           <Tooltip content={<Tip money={false} />} cursor={{ fill: "var(--surface-2)" }} />
           <Bar dataKey="available" name="Available" stackId="s" fill={C.accent} maxBarSize={18} onClick={(d: { payload?: { href?: string } }) => d.payload?.href && router.push(d.payload.href)} />
-          <Bar dataKey="reserved" name="Reserved" stackId="s" fill={C.gold} radius={[0, 4, 4, 0]} maxBarSize={18} />
+          <Bar dataKey="reserved" name="Reserved" stackId="s" fill={C.sulphur} radius={[0, 4, 4, 0]} maxBarSize={18} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -123,7 +123,7 @@ export function TrackerChart({ data, unit, target, kind = "bar", decimals = 2, h
 /** Market observations over time vs own sales and supplier costs, with the suggested range shaded. */
 export function MarketChart({ points, band, floor, unit, height = 300 }: { points: { t: number; price: number; kind: "market" | "sale" | "purchase"; source: string }[]; band?: { low: number; mid: number; high: number } | null; floor?: number | null; unit: string; height?: number }) {
   const series = [
-    { k: "market", name: "Market prices", color: C.gold },
+    { k: "market", name: "Market prices", color: C.sulphur },
     { k: "sale", name: "Our sales", color: C.accent },
     { k: "purchase", name: "Our purchase costs", color: "var(--text-3)" },
   ] as const;

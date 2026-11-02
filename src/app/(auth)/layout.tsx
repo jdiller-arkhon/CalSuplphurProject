@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/brand-mark";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
@@ -5,7 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "linear-gradient(var(--sidebar-text) 1px, transparent 1px), linear-gradient(90deg, var(--sidebar-text) 1px, transparent 1px)", backgroundSize: "44px 44px" }} aria-hidden />
         <div className="relative flex h-full flex-col justify-between p-12">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-[#a37c3c] text-xs font-bold text-sidebar">S</div>
+            <BrandMark size={38} />
             <span className="text-sm font-semibold tracking-tight text-white">CSC Command</span>
           </div>
           <div>

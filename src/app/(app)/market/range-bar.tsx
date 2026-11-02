@@ -16,7 +16,7 @@ export function RangeBar({ low, mid, high, marks, fmt }: { low: Dec; mid: Dec; h
         <div className="absolute -top-7 -translate-x-1/2 whitespace-nowrap text-center" style={{ left: pct(mid) }}>
           <div className="num text-sm font-semibold text-gold">{fmt(mid)}</div>
         </div>
-        <div className="absolute top-1/2 h-5 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded bg-gold shadow" style={{ left: pct(mid) }} />
+        <div className="absolute top-1/2 h-5 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded bg-[#c9b81c] shadow" style={{ left: pct(mid) }} />
         {marks.map((m, i) => (
           <div key={m.label} className="range-mark absolute top-1/2 -translate-x-1/2" style={{ left: pct(m.value), animationDelay: `${0.3 + i * 0.12}s` }}>
             <div className="mx-auto h-4 w-4 -translate-y-1/2 rounded-full border-2 border-surface shadow" style={{ background: color[m.tone] }} />

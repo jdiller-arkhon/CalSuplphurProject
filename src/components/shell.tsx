@@ -1,5 +1,6 @@
 "use client";
 import { MotionFx } from "./motion-fx";
+import { BrandMark } from "./brand-mark";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -38,7 +39,7 @@ export function Sidebar({ perms, company, open, onClose }: { perms: string[]; co
         active(i.href) ? "nav-active text-white" : "text-sidebar-fg hover:bg-white/5 hover:text-white",
       )}
     >
-      {active(i.href) && <span className="absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r bg-gold" aria-hidden />}
+      {active(i.href) && <span className="absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r bg-sulphur" aria-hidden />}
       <Icon name={i.icon} className={active(i.href) ? "text-gold" : "text-sidebar-fg/70 group-hover:text-white"} />
       {i.label}
     </Link>
@@ -48,7 +49,7 @@ export function Sidebar({ perms, company, open, onClose }: { perms: string[]; co
       <div className={cx("fixed inset-0 z-30 bg-black/40 lg:hidden", open ? "block" : "hidden")} onClick={onClose} aria-hidden />
       <aside className={cx("sidebar-bg fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col px-3 pb-3 transition-transform lg:translate-x-0", open ? "translate-x-0" : "-translate-x-full")} aria-label="Primary">
         <Link href="/" className="flex h-16 items-center gap-2.5 px-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-[#a37c3c] text-[11px] font-bold tracking-wider text-sidebar shadow-inner">S</div>
+          <BrandMark size={34} />
           <div className="leading-tight">
             <div className="gold-text text-[14px] font-semibold tracking-tight">CSC Command</div>
             <div className="max-w-[160px] truncate text-[11px] text-sidebar-fg/70">{company || "California Sulphur Co."}</div>
@@ -98,7 +99,7 @@ export function Header({ user, unread, onMenu }: { user: { name: string; email: 
         <ThemeToggle />
         <Link href="/notifications" className="relative rounded-lg p-2 text-fg-2 hover:bg-surface-2 hover:text-fg" aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}>
           <Icons.Bell size={18} />
-          {unread > 0 && <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-sidebar">{unread > 9 ? "9+" : unread}</span>}
+          {unread > 0 && <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-sulphur px-1 text-[10px] font-bold text-sidebar">{unread > 9 ? "9+" : unread}</span>}
         </Link>
         <UserMenu user={user} />
       </div>

@@ -36,8 +36,8 @@ export function MarketCheck({ productId, price, landed, onUse }: { productId: st
     <section className="card rise p-5">
       {head}
       <div className="relative mb-2 mt-6 h-2.5 rounded-full bg-surface-2">
-        <div className="absolute inset-y-0 rounded-full bg-gold/50" style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})` }} />
-        <div className="absolute top-1/2 h-4 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded bg-gold" style={{ left: pct(mid) }} title="Market rate" />
+        <div className="absolute inset-y-0 rounded-full bg-sulphur/70" style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})` }} />
+        <div className="absolute top-1/2 h-4 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded bg-[#c9b81c]" style={{ left: pct(mid) }} title="Market rate" />
         {g.floor && <div className="absolute top-1/2 h-4 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-crit" style={{ left: pct(dec(g.floor)) }} title="Minimum-margin floor" />}
         {p && <div className="range-mark absolute top-1/2 -translate-x-1/2" style={{ left: pct(p) }}><div className="h-4 w-4 -translate-y-1/2 rounded-full border-2 border-surface bg-accent shadow" /><div className="num absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-accent">You {fmtMoney(p, "USD", 0)}</div></div>}
       </div>

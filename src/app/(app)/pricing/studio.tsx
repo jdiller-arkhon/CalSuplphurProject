@@ -314,7 +314,7 @@ function Waterfall({ r }: { r: PricingResult }) {
       <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-fg-3">Where each {fmtMoney(r.netPrice)} goes</div>
       <div className="flex h-3 overflow-hidden rounded-full bg-surface-2">
         {items.map((b, i) => <div key={i} title={`${b.label}: ${fmtMoney(b.perUnit)}`} style={{ width: `${(Number(b.perUnit) / price) * 100}%`, background: `color-mix(in srgb, var(--accent) ${100 - i * 9}%, var(--surface-2))` }} />)}
-        {Number(r.grossProfitPerUnit) > 0 && <div title="Gross profit" className="bg-gold" style={{ width: `${(Number(r.grossProfitPerUnit) / price) * 100}%` }} />}
+        {Number(r.grossProfitPerUnit) > 0 && <div title="Gross profit" className="bg-sulphur" style={{ width: `${(Number(r.grossProfitPerUnit) / price) * 100}%` }} />}
       </div>
       <ul className="mt-3 space-y-1 text-xs">
         {items.map((b, i) => (

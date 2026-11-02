@@ -26,6 +26,8 @@ export const PERMISSIONS = {
   "settings.manage": "Change company settings",
   "import.run": "Import data from spreadsheets",
   "tracking.use": "Create trackers and log tracked values",
+  "invoices.view": "View invoices and payments",
+  "invoices.manage": "Create, issue, void invoices and record payments",
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
@@ -34,7 +36,7 @@ const ALL = Object.keys(PERMISSIONS) as Permission[];
 export const DEFAULT_ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   OWNER: ALL,
   MANAGER: ALL.filter((p) => !["users.manage", "settings.manage", "audit.view", "pricing.rules", "quotes.approve", "inventory.reverse"].includes(p)),
-  VIEWER: ["inventory.view", "customers.view", "documents.view", "logistics.manage", "tracking.use"],
+  VIEWER: ["inventory.view", "customers.view", "documents.view", "logistics.manage", "tracking.use", "invoices.view"],
 };
 
 /** OWNER permissions are fixed so the system can never lock out its administrator. */

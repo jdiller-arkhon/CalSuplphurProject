@@ -62,3 +62,19 @@ The bell shows alerts created from your data: low stock, quotes waiting for appr
 - **Log value** from the card or the tracker page. Type it in any unit of the same kind (e.g. 240 × 25 kg bags into a tonnes tracker); it's converted exactly and the original entry is kept.
 - On a tracker page, switch the period length and the **Show in** unit; download the history as CSV.
 - **Settings → Units** lists every unit. Owners and managers can add units: a new size of an existing kind (1 tote = 1,040 L) or a brand-new kind (Pallets) that only converts to itself. Units in use can't be removed.
+
+
+## Invoicing
+
+1. **Invoices → New invoice** (or **New invoice** on a customer). Pick the customer; their terms, addresses and agreed prices fill in. Add product lines and, if the product is leaving your yard, choose the **stock lot** — issuing the invoice takes that quantity out of inventory. Add freight or other charges as extra lines.
+2. **Save as draft** to finish later, or **Issue invoice**. Issuing gives it the next number (INV-2026-00001…) and locks it.
+3. **Download the PDF** and send it yourself. CSC Command never emails customers.
+4. **Record payment** when money arrives (part payments are fine). The invoice shows *Part paid* then *Paid*.
+5. Mistake on an issued invoice? Remove any payments, then **Void** it (stock goes back to the lot) and issue a new one.
+6. The Invoices page shows what's owed, what's overdue, how late, and who owes it.
+
+**Branding:** Settings → Sections & invoicing → *Logo on invoices* (PNG/JPG). Without an upload, invoices use the CSC element tile. Fill in **How to pay** so remittance details print on every invoice.
+
+## Sections
+
+Settings → Sections & invoicing → **Simple** turns on only Inventory, Pricing & market rates, Invoicing and Customers. Everything else is hidden for all users until switched back on; no records are deleted.

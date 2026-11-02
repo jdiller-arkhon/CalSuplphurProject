@@ -153,6 +153,7 @@ model Product {
   documents          Document[]
   trackers           Tracker[]
   marketRates        MarketRate[]
+  invoiceLines       InvoiceLine[]
   @@index([name])
 }
 
@@ -337,6 +338,7 @@ model Customer {
   scenarios       PricingScenario[]
   agreements      PricingAgreement[]
   documents       Document[]
+  invoices        Invoice[]
   @@index([name])
 }
 
@@ -799,4 +801,85 @@ model MarketRate {
   createdBy   String?
   createdAt   DateTime @default(now())
   @@index([productId, observedAt])
+}
+
+
+// ───────────────────────── Invoicing ─────────────────────────
+
+enum InvoiceStatus {
+  DRAFT           // editable; no stock moved, not owed yet
+  ISSUED          // locked; amount is owed
+  PARTIALLY_PAID
+  PAID
+  VOID            // cancelled after issue; kept for the record
+}
+
+enum PaymentMethod {
+  CHECK
+  ACH
+  WIRE
+  CARD
+  CASH
+  OTHER
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  number       String?       @unique   // assigned when issued, so numbers have no gaps
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  salesOrderId String?
+  status       InvoiceStatus @default(DRAFT)
+  issueDate    DateTime      @db.Date
+  dueDate      DateTime      @db.Date
+  paymentTerms String?
+  customerPo   String?
+  currency     String        @default("USD")
+  taxPct       Decimal       @db.Decimal(9, 6) @default(0)
+  subtotal     Decimal       @db.Decimal(18, 2) @default(0)
+  taxAmount    Decimal       @db.Decimal(18, 2) @default(0)
+  total        Decimal       @db.Decimal(18, 2) @default(0)
+  amountPaid   Decimal       @db.Decimal(18, 2) @default(0)
+  billTo       String?
+  shipTo       String?
+  notes        String?
+  voidReason   String?
+  issuedAt     DateTime?
+  createdBy    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  lines        InvoiceLine[]
+  payments     InvoicePayment[]
+  @@index([status, dueDate])
+  @@index([customerId])
+}
+
+model InvoiceLine {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  position    Int      @default(0)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  description String
+  quantity    Decimal  @db.Decimal(20, 6)
+  unitLabel   String?                       // e.g. MT, load, each
+  unitPrice   Decimal  @db.Decimal(18, 4)
+  amount      Decimal  @db.Decimal(18, 2)
+  lotId       String?                       // when set, stock is taken from this lot on issue
+  unitCost    Decimal? @db.Decimal(18, 4)   // lot cost captured on issue (for margin)
+  movementId  String?                       // the inventory movement posted on issue
+}
+
+model InvoicePayment {
+  id          String        @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  receivedAt  DateTime      @db.Date
+  amount      Decimal       @db.Decimal(18, 2)
+  method      PaymentMethod @default(CHECK)
+  reference   String?
+  note        String?
+  createdBy   String?
+  createdAt   DateTime      @default(now())
 }

@@ -8,6 +8,7 @@ import { Card, PageHeader, LinkButton, Table, StatusBadge, Stat, Badge, Kpi } fr
 import { FormModal, ActionButton } from "@/components/form-modal";
 import { addContact, removeContact, setCustomerActive, addAgreement } from "@/server/actions/parties";
 import { lookups, today } from "@/server/lookups";
+import { moduleOn } from "@/server/modules";
 
 export default async function CustomerDetail({ params }: { params: Promise<{ id: string }> }) {
   const u = await requireUser("customers.view");
@@ -43,6 +44,9 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
     freight = freight.plus(o.shipments.filter((s) => s.status !== "CANCELLED" && s.shippedAt).flatMap((s) => s.freightCosts).reduce((t, f) => t.plus(dec(f.amount)), new D(0)));
   }
   const gp = rev.minus(cogs).minus(freight);
+  const [salesOn, invOn] = await Promise.all([moduleOn("sales"), moduleOn("invoicing")]);
+  const invoices = invOn && can(u, "invoices.view") ? await db.invoice.findMany({ where: { customerId: c.id }, orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }], take: 12 }) : null;
+  const owed = invoices ? invoices.filter((i) => i.status === "ISSUED" || i.status === "PARTIALLY_PAID").reduce((t, i) => t.plus(dec(i.total).minus(dec(i.amountPaid))), new D(0)) : null;
   const products = new Map(l.products.map((p) => [p.id, p.name]));
   return (
     <>
@@ -54,7 +58,8 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
           <>
             {manage && <ActionButton action={setCustomerActive} hidden={{ id: c.id, active: c.active ? "false" : "true" }} size="md">{c.active ? "Deactivate" : "Reactivate"}</ActionButton>}
             {manage && <LinkButton variant="secondary" href={`/customers/${c.id}/edit`}><Pencil size={14} /> Edit</LinkButton>}
-            {can(u, "quotes.manage") && <LinkButton href={`/sales/quotes/new?customer=${c.id}`}><Plus size={14} /> New quote</LinkButton>}
+            {salesOn && can(u, "quotes.manage") && <LinkButton href={`/sales/quotes/new?customer=${c.id}`}><Plus size={14} /> New quote</LinkButton>}
+            {invoices && can(u, "invoices.manage") && <LinkButton href={`/invoices/new?customer=${c.id}`} variant="gold"><Plus size={14} /> New invoice</LinkButton>}
           </>
         }
       />
@@ -140,6 +145,23 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
           {!c.quotes.length && <p className="px-5 py-4 text-sm text-fg-2">No quotes.</p>}
         </Card>
       </div>
+      {invoices && (
+        <Card className="mt-6" title={<span>Invoices {owed && owed.gt(0) && <span className="ml-2 text-sm font-normal text-fg-2">· {fmtMoney(owed, c.currency)} owed</span>}</span>} action={<Link href={`/invoices?tab=all&customer=${c.id}`} className="text-xs font-medium text-accent">All invoices →</Link>} pad={false}>
+          <Table head={["Invoice", "Date", "Due", "Total", "Balance", "Status"]}>
+            {invoices.map((i) => (
+              <tr key={i.id}>
+                <td><Link href={`/invoices/${i.id}`} className="num font-medium hover:text-accent">{i.number ?? "Draft"}</Link></td>
+                <td className="text-fg-2">{i.issueDate.toLocaleDateString("en-US", { dateStyle: "medium", timeZone: "UTC" })}</td>
+                <td className="text-fg-2">{i.dueDate.toLocaleDateString("en-US", { dateStyle: "medium", timeZone: "UTC" })}</td>
+                <td className="num">{fmtMoney(i.total, i.currency)}</td>
+                <td className="num">{i.status === "DRAFT" || i.status === "VOID" ? "—" : fmtMoney(dec(i.total).minus(dec(i.amountPaid)), i.currency)}</td>
+                <td><StatusBadge status={i.status === "ISSUED" ? "UNPAID" : i.status} /></td>
+              </tr>
+            ))}
+          </Table>
+          {!invoices.length && <p className="px-5 py-4 text-sm text-fg-2">No invoices yet.</p>}
+        </Card>
+      )}
       <Card className="mt-6" title="Documents" action={<Link href={`/documents?customerId=${c.id}`} className="text-xs font-medium text-accent">Manage →</Link>}>
         {c.documents.filter((d) => !d.confidential || can(u, "documents.confidential")).map((d) => <a key={d.id} className="mr-4 inline-flex items-center gap-1.5 text-sm text-accent" href={`/api/documents/${d.id}`}><FileText size={13} />{d.title}</a>)}
         {!c.documents.length && <p className="text-sm text-fg-2">No documents linked.</p>}

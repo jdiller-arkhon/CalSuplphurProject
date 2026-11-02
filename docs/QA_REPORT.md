@@ -12,7 +12,8 @@ All results below were produced by running the suites in this repository against
 | `tests/reports.test.ts` | All 8 Excel workbooks (frozen header, formulas reference valid cells, totals reconcile to the engine, formula-injection escaping); all 6 PowerPoint templates (native charts, real figures); quote PDF validity and single page | **19 / 19 pass** |
 | `tests/import.test.ts` | Header auto-matching; CSV quoting and currency cleanup; duplicate and invalid-row detection; refusal unless skipping is chosen; skipped rows recorded; beginning inventory via ledger | **5 / 5 pass** |
 | `tests/tracking-market.test.ts` | Unit conversion across kinds (and refusal across kinds), price-rate conversion, tracker storage in tracker unit with original kept, sum/average/latest aggregation, target status, market guide unit conversion, non-USD exclusion, recency weighting, window and basis filters, min-margin floor | **9 / 9 pass** |
-| **Total unit + integration** | | **75 / 75 pass** |
+| `tests/invoicing.test.ts` | Line/tax rounding; draft → issue (gap-free number, idempotent), stock taken from lot only on issue, insufficient stock refuses and leaves a draft; part and full payment, overpayment refused; void returns stock, needs payments removed, idempotent; validation; receivables ageing; single-page PDF that never prints cost; sections normalisation and path mapping | **9 / 9 pass** |
+| **Total unit + integration** | | **84 / 84 pass** |
 | `e2e/smoke.mjs` | Anonymous access blocked; every sidebar page and 26 more routes load without errors; 7 detail pages; search; all Excel/PowerPoint/PDF/template downloads; scale ticket through the real form; no browser errors | **67 / 67 pass** |
 | `e2e/permissions.mjs` | Invite → accept as Viewer; link single-use; 7 restricted pages redirect; valuation hidden; sidebar filtered; export APIs return 403; search filtered; deactivation ends the session | **18 / 18 pass** |
 

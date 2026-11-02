@@ -9,6 +9,9 @@ import { Card, Kpi, PageHeader, Empty, LinkButton, Badge, StatusBadge, cx } from
 import { PeriodPicker } from "@/components/period";
 import { CountUp } from "@/components/count-up";
 import { RevenueTrend, HBar, StockBars } from "@/components/charts";
+import { enabledModules } from "@/server/modules";
+import { receivables } from "@/server/services/invoicing";
+import { Receipt } from "lucide-react";
 
 export const metadata = { title: "Overview" };
 
@@ -16,7 +19,10 @@ export default async function Overview({ searchParams }: { searchParams: Promise
   const u = await requireUser();
   const sp = await searchParams;
   const period = parsePeriod(sp);
-  const fin = can(u, "finance.view");
+  const on = await enabledModules();
+  const has = (m: string) => on.includes(m as never);
+  const salesOn = has("sales"), invOn = has("invoicing") && can(u, "invoices.view");
+  const fin = can(u, "finance.view") && salesOn;
   const val = can(u, "inventory.value");
   const [snap, pipe, f, ins, setupDone, productCount, recent, audits] = await Promise.all([
     inventorySnapshot(),
@@ -28,6 +34,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
     db.inventoryMovement.findMany({ take: 8, orderBy: { at: "desc" }, include: { product: true, lot: { include: { location: true } } } }),
     can(u, "audit.view") ? db.auditEvent.findMany({ take: 6, orderBy: { at: "desc" }, include: { user: true } }) : [],
   ]);
+  const [ar, invoiced] = invOn ? await Promise.all([receivables(), db.invoice.aggregate({ where: { status: { notIn: ["DRAFT", "VOID"] }, issueDate: { gte: period.from, lte: period.to } }, _sum: { total: true }, _count: true })]) : [null, null];
   const unit = snap.unit;
   const attention = snap.reorder.length + pipe.pendingApproval.length;
   const trend = f?.months.map((m) => ({ label: new Date(`${m.key}-01T00:00:00`).toLocaleDateString("en-US", { month: "short" }), revenue: m.revenue.toNumber(), profit: gp(m).toNumber(), margin: margin(m) ? margin(m)!.times(100).toNumber() : null })) ?? [];
@@ -39,9 +46,9 @@ export default async function Overview({ searchParams }: { searchParams: Promise
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">California Sulphur Company · Command Center</div>
             <h1 className="mt-2 text-[30px] font-semibold tracking-tight md:text-[34px]">Good {greeting()}, <span className="gold-text">{u.name.split(" ")[0]}</span></h1>
-            <p className="mt-1 text-sm text-white/60">{fin ? `${period.label} · revenue recognized on dispatch · gross profit after direct freight` : "Operational overview"}</p>
+            <p className="mt-1 text-sm text-white/60">{fin ? `${period.label} · revenue recognized on dispatch · gross profit after direct freight` : invOn ? `${period.label} · inventory, pricing and invoicing` : "Operational overview"}</p>
           </div>
-          {fin && <div data-theme="dark" className="rounded-xl bg-white/5 p-1 text-fg ring-1 ring-white/10 backdrop-blur"><PeriodPicker current={period.key} /></div>}
+          {(fin || invOn) && <div data-theme="dark" className="rounded-xl bg-white/5 p-1 text-fg ring-1 ring-white/10 backdrop-blur"><PeriodPicker current={period.key} /></div>}
         </div>
         <div className="stagger relative z-10 mt-7 grid grid-cols-2 gap-3 xl:grid-cols-4">
           {f ? (
@@ -55,6 +62,19 @@ export default async function Overview({ searchParams }: { searchParams: Promise
             <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Gross profit</div>
             <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight gold-text"><CountUp value={gp(f.totals).toNumber()} format="usd" /></div>
             <div className="mt-2 text-xs text-white/55"><span className="text-gold">{fmtPct(margin(f.totals))}</span> margin after freight</div>
+          </Link>
+            </>
+          ) : ar && invoiced ? (
+            <>
+          <Link href="/invoices?tab=all" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Invoiced</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight"><CountUp value={Number(invoiced._sum.total ?? 0)} format="usd" /></div>
+            <div className="mt-2 text-xs text-white/55">{invoiced._count} invoice{invoiced._count === 1 ? "" : "s"} · {period.label}</div>
+          </Link>
+          <Link href="/invoices" className="glass-tile block p-5">
+            <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-white/60">Owed to us</div>
+            <div className="mt-2 text-[30px] font-semibold leading-none tracking-tight gold-text"><CountUp value={ar.total.toNumber()} format="usd" /></div>
+            <div className={cx("mt-2 text-xs", ar.overdue.gt(0) ? "text-[#f3b0b0]" : "text-white/55")}>{ar.overdue.gt(0) ? `${fmtMoney(ar.overdue)} overdue` : "Nothing overdue"}</div>
           </Link>
             </>
           ) : (
@@ -102,16 +122,16 @@ export default async function Overview({ searchParams }: { searchParams: Promise
         </div>
       )}
 
-      <div className="card rise mt-5 grid grid-cols-2 divide-line sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
-        {[
-          ["Open quotes", pipe.quotes.length, "/sales?tab=quotes", FileText],
-          ["Sales orders", pipe.orders.length, "/sales?tab=orders", ClipboardList],
-          ["Shipments", pipe.shipments.length, "/logistics", Truck],
-          ["Purchase orders", pipe.pos.length, "/purchasing", ShoppingCart],
+      <div className="card rise mt-5 grid grid-cols-2 divide-line sm:grid-cols-3 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none lg:divide-x">
+        {([
+          ...(salesOn ? [["Open quotes", pipe.quotes.length, "/sales?tab=quotes", FileText], ["Sales orders", pipe.orders.length, "/sales?tab=orders", ClipboardList]] : []),
+          ...(ar ? [["Unpaid invoices", ar.rows.length, "/invoices", Receipt], ["Overdue invoices", ar.rows.filter((r) => r.daysLate > 0).length, "/invoices?tab=overdue", AlertTriangle]] : []),
+          ...(has("logistics") ? [["Shipments", pipe.shipments.length, "/logistics", Truck]] : []),
+          ...(has("purchasing") ? [["Purchase orders", pipe.pos.length, "/purchasing", ShoppingCart]] : []),
           ["Needs attention", attention, "/notifications", AlertTriangle],
-        ].map(([label, n, href, Icon]) => {
+        ] as [string, number, string, typeof FileText][]).map(([label, n, href, Icon]) => {
           const I = Icon as typeof FileText;
-          const warn = label === "Needs attention" && Number(n) > 0;
+          const warn = (label === "Needs attention" || label === "Overdue invoices") && Number(n) > 0;
           return (
             <Link key={label as string} href={href as string} className="group flex items-center gap-3 px-5 py-4 hover:bg-surface-2/60">
               <I size={16} className={warn ? "text-warn" : "text-fg-3 group-hover:text-accent"} aria-hidden />
@@ -196,7 +216,25 @@ export default async function Overview({ searchParams }: { searchParams: Promise
               {f.byCustomer.length ? <HBar color="gold" data={f.byCustomer.slice(0, 6).map((c) => ({ label: c.label, value: gp(c).toNumber(), href: `/customers/${c.key}` }))} /> : <p className="text-sm text-fg-2">No shipped sales in this period.</p>}
             </Card>
           )}
-          <Card title="Upcoming deliveries" action={<Link href="/logistics" className="text-xs font-medium text-accent">Logistics →</Link>} pad={false}>
+          {ar && (
+            <Card title="Unpaid invoices" action={<Link href="/invoices" className="text-xs font-medium text-accent">Invoices →</Link>} pad={false}>
+              {ar.rows.length ? (
+                <ul className="divide-y divide-line">
+                  {ar.rows.slice(0, 6).map((r) => (
+                    <li key={r.invoice.id}>
+                      <Link href={`/invoices/${r.invoice.id}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-surface-2">
+                        <span className="num whitespace-nowrap text-[13px] font-medium">{r.invoice.number}</span>
+                        <span className="truncate text-xs text-fg-2">{r.invoice.customer.name}</span>
+                        <span className={cx("ml-auto whitespace-nowrap text-xs", r.daysLate > 0 ? "font-medium text-crit" : "text-fg-3")}>{r.daysLate > 0 ? `${r.daysLate}d late` : `due ${r.invoice.dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}`}</span>
+                        <span className="num w-24 text-right text-[13px] font-semibold">{fmtMoney(r.balance)}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="p-5 text-sm text-fg-2">Nothing owed right now.</p>}
+            </Card>
+          )}
+          {has("logistics") && <Card title="Upcoming deliveries" action={<Link href="/logistics" className="text-xs font-medium text-accent">Logistics →</Link>} pad={false}>
             {pipe.shipments.length ? (
               <ul className="divide-y divide-line">
                 {pipe.shipments.slice(0, 6).map((s) => (
@@ -213,7 +251,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
             ) : (
               <p className="p-5 text-sm text-fg-2">No planned or in-transit shipments.</p>
             )}
-          </Card>
+          </Card>}
           <Card title="Recent inventory movements" action={<Link href="/inventory?view=ledger" className="text-xs font-medium text-accent">Ledger →</Link>} pad={false}>
             {recent.length ? (
               <ul className="divide-y divide-line">

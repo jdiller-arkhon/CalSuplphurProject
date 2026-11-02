@@ -165,7 +165,7 @@ function Shield() {
 const SCENES: [string, () => ReactNode][] = [
   ["/inventory", Piles], ["/logistics", Freight], ["/pricing", Market], ["/market", Market], ["/tracking", Charts], ["/operations", Plant], ["/yard", Plant],
   ["/sales", () => <Network />], ["/customers", () => <Network hub="#5d8fc4" />], ["/suppliers", () => <Network hub={GL} />],
-  ["/analytics", Charts], ["/reports", Charts], ["/products", Crystals], ["/purchasing", Crates], ["/documents", Pages],
+  ["/analytics", Charts], ["/reports", Charts], ["/products", Crystals], ["/purchasing", Crates], ["/documents", Pages], ["/invoices", Pages],
   ["/settings", Shield], ["/setup", Shield], ["/notifications", Shield],
 ];
 

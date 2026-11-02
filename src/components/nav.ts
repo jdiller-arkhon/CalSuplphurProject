@@ -1,9 +1,10 @@
 import type { Permission } from "@/server/permissions";
+import { moduleForPath, type ModuleKey } from "@/lib/modules";
 
 export type NavItem = { href: string; label: string; icon: string; perm?: Permission };
 export type NavGroup = { label: string; items: NavItem[] };
 
-// Fifteen destinations grouped by workflow so the sidebar reads as four short lists.
+// Destinations grouped by workflow so the sidebar reads as four short lists.
 export const NAV: NavGroup[] = [
   { label: "", items: [{ href: "/", label: "Overview", icon: "LayoutDashboard" }] },
   {
@@ -21,6 +22,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: "/pricing", label: "Pricing Studio", icon: "Calculator", perm: "pricing.use" },
       { href: "/market", label: "Market rates", icon: "LineChart", perm: "pricing.use" },
+      { href: "/invoices", label: "Invoices", icon: "Receipt", perm: "invoices.view" },
       { href: "/sales", label: "Sales & Quotes", icon: "FileSignature", perm: "quotes.manage" },
       { href: "/customers", label: "Customers", icon: "Building2", perm: "customers.view" },
       { href: "/suppliers", label: "Suppliers", icon: "Handshake", perm: "suppliers.manage" },
@@ -37,3 +39,6 @@ export const NAV: NavGroup[] = [
   },
 ];
 export const SETTINGS_ITEM: NavItem = { href: "/settings", label: "Settings", icon: "Settings" };
+
+/** Section that owns a nav item (null = always available). */
+export const itemModule = (href: string): ModuleKey | null => moduleForPath(href);

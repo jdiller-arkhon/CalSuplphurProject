@@ -88,8 +88,9 @@ export async function receiveTx(
 export const receive = (ctx: Ctx, i: Parameters<typeof receiveTx>[2]) => serializable((tx) => receiveTx(tx, ctx, i));
 
 /** Signed adjustment at the lot's current cost (cycle counts, damage, moisture loss). */
-export async function adjust(ctx: Ctx, i: { lotId: string; delta: DecInput; reason: string; idempotencyKey?: string }) {
-  return serializable(async (tx) => {
+export const adjust = (ctx: Ctx, i: Parameters<typeof adjustTx>[2]) => serializable((tx) => adjustTx(tx, ctx, i));
+export async function adjustTx(tx: Tx, ctx: Ctx, i: { lotId: string; delta: DecInput; reason: string; idempotencyKey?: string }) {
+  {
     const prior = await existingByKey(tx, i.idempotencyKey);
     if (prior) return prior;
     const delta = q6(i.delta);
@@ -103,7 +104,7 @@ export async function adjust(ctx: Ctx, i: { lotId: string; delta: DecInput; reas
     const mv = await postMovement(tx, { type: "ADJUSTMENT", productId: lot.productId, lotId: lot.id, quantity: delta, unitCost: lot.unitCost, reason: i.reason, userId: ctx.userId, idempotencyKey: i.idempotencyKey });
     await audit(tx, { userId: ctx.userId, action: "inventory.adjust", entity: "InventoryLot", entityId: lot.id, summary: `Adjusted ${lot.product.name} ${lot.location.code}/${lot.lotNumber} by ${delta}: ${i.reason}`, data: { movementId: mv.id } });
     return mv;
-  });
+  }
 }
 
 /** Move available quantity to another location, preserving the lot number and cost. */

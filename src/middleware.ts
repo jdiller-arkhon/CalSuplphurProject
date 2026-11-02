@@ -10,6 +10,9 @@ export function middleware(req: NextRequest) {
     if (pathname.startsWith("/api/")) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     return NextResponse.redirect(new URL("/login", req.url));
   }
-  return NextResponse.next();
+  // Pass the path to server components so page guards can check whether the section is switched on.
+  const headers = new Headers(req.headers);
+  headers.set("x-pathname", pathname);
+  return NextResponse.next({ request: { headers } });
 }
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };

@@ -6,6 +6,8 @@ import { hash, verify } from "@node-rs/argon2";
 import { authenticator } from "otplib";
 import type { Role, User } from "@prisma/client";
 import { db } from "./db";
+import { moduleForPath } from "@/lib/modules";
+import { moduleOn } from "./modules";
 import { DEFAULT_ROLE_PERMISSIONS, LOCKED_OWNER, type Permission } from "./permissions";
 
 export const SESSION_COOKIE = "csc_session";
@@ -103,6 +105,10 @@ export async function requireUser(permission?: Permission): Promise<CurrentUser>
   const u = await currentUser();
   if (!u) redirect("/login");
   if (permission && !u.permissions.has(permission)) redirect("/forbidden");
+  // Sections switched off in Settings → Sections are unavailable (they are hidden from navigation too).
+  const path = (await headers()).get("x-pathname");
+  const mod = path ? moduleForPath(path) : null;
+  if (mod && !(await moduleOn(mod))) redirect(`/section-off?m=${mod}`);
   return u;
 }
 

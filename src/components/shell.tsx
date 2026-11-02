@@ -6,7 +6,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Command } from "cmdk";
 import * as Icons from "lucide-react";
-import { NAV, SETTINGS_ITEM, type NavItem } from "./nav";
+import { NAV, SETTINGS_ITEM, itemModule, type NavItem } from "./nav";
+import { createContext, useContext } from "react";
+
+const ModulesCtx = createContext<string[] | null>(null);
+/** True when the item is permitted and its section is switched on. */
+function useVisible(perms?: string[]) {
+  const mods = useContext(ModulesCtx);
+  return (i: { href: string; perm?: string }) => (!i.perm || !perms || perms.includes(i.perm)) && (!mods || (() => { const m = itemModule(i.href.split("?")[0]); return !m || mods.includes(m); })());
+}
 import { cx } from "./ui";
 
 type IconName = keyof typeof Icons;
@@ -17,7 +25,7 @@ const Icon = ({ name, size = 16, className }: { name: string; size?: number; cla
 
 export function Sidebar({ perms, company, open, onClose }: { perms: string[]; company: string; open: boolean; onClose: () => void }) {
   const path = usePathname();
-  const allowed = (i: NavItem) => !i.perm || perms.includes(i.perm);
+  const allowed = useVisible(perms);
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   const link = (i: NavItem) => (
     <Link
@@ -142,6 +150,7 @@ type Hit = { type: string; id: string; title: string; subtitle?: string; href: s
 const QUICK = [
   { label: "Receive inventory", href: "/inventory?action=receive", icon: "PackagePlus" },
   { label: "Scale ticket (yard mode)", href: "/yard", icon: "Scale" },
+  { label: "New invoice", href: "/invoices/new", icon: "ReceiptText" },
   { label: "Calculate a price", href: "/pricing", icon: "Calculator" },
   { label: "Check market rate", href: "/market", icon: "LineChart" },
   { label: "New tracker", href: "/tracking", icon: "Gauge" },
@@ -179,7 +188,8 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
     onClose();
     router.push(href);
   };
-  const pages = useMemo(() => [...NAV.flatMap((g) => g.items), SETTINGS_ITEM], []);
+  const visible = useVisible();
+  const pages = useMemo(() => [...NAV.flatMap((g) => g.items), SETTINGS_ITEM].filter(visible), [visible]);
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 pt-[12vh] backdrop-blur-[2px]" onClick={onClose}>
       <Command label="Command palette" shouldFilter={false} className="card w-full max-w-xl overflow-hidden shadow-[var(--shadow-lg)]" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.key === "Escape" && onClose()}>
@@ -204,7 +214,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
           {q.trim().length < 2 && (
             <>
               <Command.Group heading="Quick actions">
-                {QUICK.map((a) => (
+                {QUICK.filter(visible).map((a) => (
                   <Item key={a.href} onSelect={() => go(a.href)}>
                     <Icon name={a.icon} className="text-gold" />
                     {a.label}
@@ -234,9 +244,10 @@ function Item({ children, onSelect }: { children: React.ReactNode; onSelect: () 
   );
 }
 
-export function AppFrame({ children, perms, user, unread, company }: { children: React.ReactNode; perms: string[]; user: { name: string; email: string; role: string }; unread: number; company: string }) {
+export function AppFrame({ children, perms, user, unread, company, modules }: { children: React.ReactNode; perms: string[]; user: { name: string; email: string; role: string }; unread: number; company: string; modules: string[] }) {
   const [open, setOpen] = useState(false);
   return (
+    <ModulesCtx.Provider value={modules}>
     <div className="min-h-screen">
       <Sidebar perms={perms} company={company} open={open} onClose={() => setOpen(false)} />
       <div className="lg:pl-[248px]">
@@ -244,5 +255,6 @@ export function AppFrame({ children, perms, user, unread, company }: { children:
         <main className="mx-auto max-w-[1440px] px-4 py-7 md:px-8"><MotionFx />{children}</main>
       </div>
     </div>
+    </ModulesCtx.Provider>
   );
 }

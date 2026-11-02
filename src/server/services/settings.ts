@@ -11,6 +11,9 @@ export const SETTING_DEFAULTS = {
   "revenue.recognition": "ON_SHIPMENT", // operational view; not an accounting determination
   "alerts.thresholds": { quoteExpiryDays: 5, costChangePct: "0.10", overdueShipmentDays: 1, poOverdueDays: 0 },
   "setup.completed": false,
+  "modules.enabled": null as unknown as string[] | null, // null = every section on; see src/lib/modules.ts
+  "invoices.defaults": { paymentTerms: "Net 30", dueDays: 30, taxPct: "0", footer: "", remitTo: "" },
+  "company.logo": null as unknown as { key: string; mime: string } | null,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;
